@@ -1,0 +1,31 @@
+name: Validate router plugins
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          repository: Ghostdehole/WEBUI.for.SingBox
+          ref: main
+          path: .validator
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: .validator/go.mod
+          cache-dependency-path: .validator/go.sum
+      - name: Validate manifests and SHA256 index with WebUI's parser
+        working-directory: .validator
+        run: go run ./cmd/router-plugin-check ..

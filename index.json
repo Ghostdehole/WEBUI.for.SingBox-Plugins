@@ -1,0 +1,17 @@
+{
+  "apiVersion": "webui.router.catalog/v1",
+  "plugins": [
+    {
+      "path": "plugins/dns-hijack.json",
+      "sha256": "3342bacc2ae7c6a262ff4ff67ba9693e0d18ca0bcbf77d5e851565bcb0c8ab64"
+    },
+    {
+      "path": "plugins/source-routing.json",
+      "sha256": "f5c031e9abbddeb885f6c3b13ad9fc7c61383635012335966090cb1792e4036b"
+    },
+    {
+      "path": "plugins/tun-routing.json",
+      "sha256": "368e28978951b97bd349dcd2025042c205430b02dfd3725c9259753b719a3ccf"
+    }
+  ]
+}
