@@ -1,62 +1,61 @@
-# WEBUI.for.SingBox 路由器插件目录
+# WEBUI.for.SingBox 插件中心
 
-为 [Ghostdehole/WEBUI.for.SingBox](https://github.com/Ghostdehole/WEBUI.for.SingBox) 单独维护的插件源，面向网关、旁路由和 OpenWrt / GL.iNet 透明代理。与官方桌面版 Plugin-Hub 的脚本协议不兼容，也不自动引用其插件。
+为 [Ghostdehole/WEBUI.for.SingBox](https://github.com/Ghostdehole/WEBUI.for.SingBox) 独立维护的 JavaScript 插件仓库，面向路由器、网关及透明代理部署。
 
-插件是声明式 JSON 数据。主程序在后端生成 sing-box 配置时应用插件，不依赖管理页面保持打开，不执行插件中的 JavaScript、Shell、下载器或系统命令。新增执行能力需要先在主程序实现和验证；此仓库可以独立维护预设、说明、参数和版本。
+在 WebUI 顶部「插件」页面管理和运行脚本，交互方式参考官方桌面版插件页。源码由 Go 后端执行，因此关闭浏览器后定时更新订阅仍生效。本仓库采用 WebUI 的后端接口，官方 [Plugin-Hub](https://github.com/GUI-for-Cores/Plugin-Hub) 中依赖 Wails、桌面窗口或前端 Store 的脚本需要适配。
 
-## 首批插件
+> 此仓库最初提交中的声明式 JSON 路由预设已撤回，现已改为用户要求的实际 JS 脚本插件。主程序需要带有独立「插件」页面的 1.2.0 源码版本；版本号不代表已创建 Release。
 
-| 文件 | 能力 | 使用条件 |
+## 已提供的插件
+
+| 插件 | 触发方式 | 功能 |
 | --- | --- | --- |
-| [tun-routing.json](plugins/tun-routing.json) | 为现有 TUN 开启自动路由，配置接口范围和绕过网段 | 选择已启用的 TUN；auto_redirect 需 Linux 与 nftables 支持 |
-| [source-routing.json](plugins/source-routing.json) | 按客户端 IPv4/IPv6 CIDR 选择出站 | 选择 TUN 与实际出站，填写客户端地址范围 |
-| [dns-hijack.json](plugins/dns-hijack.json) | 接管进入指定 TUN 的 TCP/UDP 53 请求 | 不自动接管发往路由器自身 dnsmasq 的请求 |
+| [防代理重名](plugins/plugin-index-the-proxy-name.js) | 订阅更新 | 消除名称冲突，保持内部出站引用 |
+| [更好的代理名称显示](plugins/plugin-modify-proxy-name.js) | 订阅更新 | 地区旗帜、关键词移除、索引 |
+| [美化节点名称](plugins/plugin-beautiful-node-name.js) | 订阅更新 / 手动 | 清理空格、订阅名前缀、地区名称与旗帜 |
+| [重复节点移除](plugins/plugin-duplicate-proxies-removal.js) | 订阅更新 | 仅合并除名称外完整配置相同的节点，保留不同凭据/TLS/协议 |
 
-## 安装与更新
+这些是为后端独立适配的脚本，不宣称与官方桌面脚本逐项兼容。地区识别基于节点名称，不发起 IP 定位请求。插件运行顺序可在页面调整。
 
-1. 在 WebUI 中编辑配置，打开「路由器插件」。
-2. 从内置目录安装，或点击「检查目录更新」读取本仓库。网络不可用时继续使用已校验缓存或内置目录。
-3. 新安装的插件默认禁用。选择当前配置的 TUN / 出站，填写参数后启用。
-4. 预览生成配置，保存，再手动重启核心。启停插件或更新目录不会直接修改正在运行的代理。
+## 安装和更新
 
-已安装插件以完整快照保存在主程序的配置中。检查更新只更新目录；点击实例的更新按钮才更新当前编辑草稿，并保留已有参数。改用新预设的默认参数时，应重新安装该预设。更新不自动升级执行协议，不自动改变防火墙、dnsmasq、路由表或系统服务。
+1. WebUI 顶部「插件 → 插件中心」安装插件，默认启用；安装不会立即执行脚本。
+2. 「更多」可编辑参数与触发器、启停、排序、更新或删除；「源码」可查看、修改和导入导出 JS。
+3. 更新订阅时自动触发对应插件。美化插件还可选择已有缓存的订阅手动运行，不重新下载、不自动重启核心。
+4. 「检查更新」从本仓库刷新目录，校验通过后才替换完整目录；失败继续使用旧缓存或程序附带目录。
+5. 点击某插件的更新才替换已安装源码，保留参数、启停、触发器与顺序。更新会覆盖本地源码修改；独立定制建议使用新 ID。
 
-也可导入、导出单个插件 JSON，供内网和离线设备使用。不要导入官方桌面版的 JS 插件。
+检查配置后再按需重启核心。插件不直接调整防火墙、dnsmasq、系统路由或桌面系统代理。
 
 ## 维护和发布
 
-目录结构：
-
 ~~~text
-index.json                 # 文件路径及 SHA256
-plugins/*.json             # 独立版本的声明式插件
+index.json                 # 元数据、默认参数、文件路径、SHA256
+plugins/*.js               # 普通 JavaScript 脚本
 .github/workflows/validate.yml
 ~~~
 
-主程序只从本仓库 main 的 index.json 读取清单，校验每个文件的 SHA256、API 版本、字段、大小和引用。一个包失败时保留上一次完整目录，不部分替换。摘要用于核对清单与文件一致性；信任来源仍是本仓库的维护权限和 HTTPS。
-
-修改插件后：
-
-1. 保持 id 稳定并递增 version（语义版本）。apiVersion 当前为 webui.router/v1。
-2. 在主程序源码目录执行下列命令；将路径改为此仓库所在目录：
+清单协议为 `webui.plugins/v1`。保持 `id` 稳定，修改脚本时递增 `version`。在主程序源码目录运行以下命令，替换为此仓库的实际路径：
 
 ~~~sh
-go run ./cmd/router-plugin-check -write-index ../WEBUI.for.SingBox-Plugins
-go run ./cmd/router-plugin-check ../WEBUI.for.SingBox-Plugins
+go run ./cmd/plugin-check -write-index ../WEBUI.for.SingBox-Plugins
+go run ./cmd/plugin-check ../WEBUI.for.SingBox-Plugins
 ~~~
 
-3. 同一个提交中提交插件和更新后的 index.json，再推送 main。GitHub Actions 使用主程序实际解析器验证插件与摘要。
+将 JS 与更新后的清单一起提交推送。GitHub Actions 使用主程序的实际解析器检查路径、容量、摘要和 JS 语法。校验器不执行脚本。保持 LF 换行，避免不同平台摘要不一致；不要提交私有节点凭据或用户数据。
 
-请保持文本 LF 换行，以使工作区、Git 和发布文件摘要一致。不要提交包含私有节点凭据、实际管理地址或敏感内部网段的实例导出。
+插件源码更新可独立发布，不必重新构建 WebUI；主程序离线目录是随其发布时附带的快照。SHA256 用于检查清单与脚本一致性，来源信任仍依赖仓库权限和 HTTPS。
 
-协议、规则顺序、容量限制和固件差异见主程序的 [插件开发说明](https://github.com/Ghostdehole/WEBUI.for.SingBox/blob/main/docs/router-plugins.md)。
+## 后端脚本 API
 
-## 兼容边界
+| 触发器 | 函数 |
+| --- | --- |
+| `on::subscribe` | `onSubscribe(proxies, subscription)` |
+| `on::generate` | `onGenerate(config)` |
+| `on::manual` | `onRun(proxies, subscription)` |
 
-- WebUI 的静态构建支持并不代表固件内核模块已就绪；仍需检查 TUN、NET_ADMIN、转发和对应防火墙能力。
-- GL-MT3600BE 的厂商固件不能直接假定为 fw4。auto_redirect 默认关闭，需按实际环境选择。
-- DNS 插件只处理进入 TUN 的 53 端口流量。路由器 LAN IP / 127.0.0.1 上的 dnsmasq、AdGuard Home、IPv6 RA/DHCP DNS 分发需要单独规划。
-- 客户端分流优先于原有路由规则；管理和 NAS 网段应按需加入 TUN 排除地址。DNS 插件优先于客户端分流。
-- 不提供桌面托盘、系统代理、UWP、窗口、壁纸等插件。
+返回转换后的 JSON 数据，或原地修改参数并不返回值。参数使用全局 `configuration` 对象；`console.log` 等和 `Plugins.Log` 支持有限日志。不存在 import/export 模块加载、网络、Shell、文件系统和 Wails API。每次调用独立环境，不能依赖全局变量持久化状态。
+
+时间、栈、输入输出及日志均有限制，但 Goja 不提供强内存隔离；只安装可信源码。完整契约、错误处理、配置顺序和资源限制见 [主程序插件说明](https://github.com/Ghostdehole/WEBUI.for.SingBox/blob/main/docs/plugins.md)。
 
 项目许可证见 [LICENSE](LICENSE)。

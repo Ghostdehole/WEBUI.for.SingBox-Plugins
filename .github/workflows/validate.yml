@@ -1,4 +1,4 @@
-name: Validate router plugins
+name: Validate JavaScript plugins
 
 on:
   push:
@@ -26,6 +26,6 @@ jobs:
         with:
           go-version-file: .validator/go.mod
           cache-dependency-path: .validator/go.sum
-      - name: Validate manifests and SHA256 index with WebUI's parser
+      - name: Validate JavaScript and SHA256 index with WebUI's parser
         working-directory: .validator
-        run: go run ./cmd/router-plugin-check ..
+        run: go run ./cmd/plugin-check ..
