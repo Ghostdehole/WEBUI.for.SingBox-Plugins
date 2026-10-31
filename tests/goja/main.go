@@ -36,6 +36,7 @@ type fixture struct {
 }
 
 func main() {
+	started := time.Now()
 	if len(os.Args) != 2 {
 		panic("usage: go run tests/goja/main.go PLUGIN_REPO")
 	}
@@ -57,7 +58,17 @@ func main() {
 	dir, err := os.MkdirTemp("", "router-plugin-goja-")
 	must(err)
 	defer os.RemoveAll(dir)
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	suiteTimeout := 60 * time.Second
+	if value := os.Getenv("WEBUI_PLUGIN_SUITE_TIMEOUT"); value != "" {
+		parsed, err := time.ParseDuration(value)
+		must(err)
+		if parsed <= 0 || parsed > 15*time.Minute {
+			panic("WEBUI_PLUGIN_SUITE_TIMEOUT must be positive and at most 15m")
+		}
+		suiteTimeout = parsed
+	}
+	fmt.Printf("Actual Goja suite timeout: %s; production hook/pipeline timeouts remain %s/%s\n", suiteTimeout, plugins.HookTimeout, plugins.PipelineTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), suiteTimeout)
 	defer cancel()
 	byID := map[string]plugins.Plugin{}
 	for _, plugin := range items {
@@ -70,12 +81,15 @@ func main() {
 		_, err = service.Save(plugin, 0)
 		must(err)
 		for _, trigger := range plugin.Triggers {
+			started := time.Now()
 			switch trigger {
 			case plugins.OnSubscribe:
 				_, err = service.ApplySubscription(ctx, []map[string]any{{"type": "direct", "tag": "France node", "__id_in_gui": "identity"}}, map[string]any{"name": "fixture"})
+				fmt.Printf("Default %s %s: %s\n", plugin.ID, trigger, time.Since(started))
 				must(err)
 			case plugins.OnGenerate:
 				_, err = service.ApplyConfig(ctx, map[string]any{"outbounds": []any{map[string]any{"type": "direct", "tag": "direct"}}})
+				fmt.Printf("Default %s %s: %s\n", plugin.ID, trigger, time.Since(started))
 				must(err)
 			}
 		}
@@ -105,7 +119,9 @@ func main() {
 			panic(item.Name + ": invalid trigger")
 		}
 		before, _ := json.Marshal(input)
+		started := time.Now()
 		result, err := apply(input)
+		fmt.Printf("Fixture %s: %s\n", item.Name, time.Since(started))
 		after, _ := json.Marshal(input)
 		if string(before) != string(after) {
 			panic(item.Name + ": mutated original input")
@@ -124,7 +140,9 @@ func main() {
 			}
 		}
 		if item.Idempotent {
+			started := time.Now()
 			second, err := apply(result)
+			fmt.Printf("Fixture %s repeat: %s\n", item.Name, time.Since(started))
 			must(err)
 			a, _ := json.Marshal(result)
 			b, _ := json.Marshal(second)
@@ -161,6 +179,7 @@ func main() {
 		}
 	}
 	fmt.Printf("Actual Goja: %d catalog plugins validated, %d transformation fixtures passed; real core: %d passed, %d skipped\n", len(items), len(fixtures), coreChecks, coreSkips)
+	fmt.Printf("Actual Goja suite elapsed: %s\n", time.Since(started))
 }
 func must(err error) {
 	if err != nil {

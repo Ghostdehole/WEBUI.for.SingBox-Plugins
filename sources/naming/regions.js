@@ -4,23 +4,30 @@ function regionRules() {
   if (compiledRegions) return compiledRegions;
   const regions = [], cities = [], emoji = new Map();
   function add(rules, keyword, region) {
-    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const chinese = /[\u3400-\u9fff]/.test(keyword);
-    // Explicit word ranges keep Latin aliases out of words in the Goja host,
-    // which does not implement Unicode property escapes consistently with V8.
-    const letters = 'A-Za-z\\u00c0-\\u02af\\u0370-\\u052f\\u0590-\\u08ff\\u3040-\\u30ff\\u3400-\\u9fff\\uac00-\\ud7af';
-    const source = chinese ? escaped : '(^|[^' + letters + '0-9])' + escaped + '(?=[^' + letters + ']|$)';
-    rules.push({ keyword: keyword, folded: keyword.toLowerCase(), region: region, regex: new RegExp(source, 'iu'), chinese: chinese });
+    rules.push({ keyword: keyword, folded: keyword.toLowerCase(), region: region, regex: null,
+      chinese: /[\u3400-\u9fff]/.test(keyword), length: Array.from(keyword).length });
   }
   RegionData.forEach(function (region) {
     emoji.set(region.emoji, region);
     region.keywords.forEach(function (keyword) { add(regions, keyword, region); });
     region.subKeywords.forEach(function (keyword) { add(cities, keyword, region); });
   });
-  const longest = function (a, b) { return Array.from(b.keyword).length - Array.from(a.keyword).length; };
+  const longest = function (a, b) { return b.length - a.length; };
   regions.sort(longest); cities.sort(longest);
   compiledRegions = { regions: regions, cities: cities, emoji: emoji };
   return compiledRegions;
+}
+
+function regionRegex(rule) {
+  if (rule.regex) return rule.regex;
+  const escaped = rule.keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // The existing literal prefilter rejects almost all aliases. Compile only
+  // candidates instead of all 907 patterns in every fresh Goja invocation.
+  // Explicit word ranges preserve the same Latin-boundary behavior in Goja.
+  const letters = 'A-Za-z\\u00c0-\\u02af\\u0370-\\u052f\\u0590-\\u08ff\\u3040-\\u30ff\\u3400-\\u9fff\\uac00-\\ud7af';
+  const source = rule.chinese ? escaped : '(^|[^' + letters + '0-9])' + escaped + '(?=[^' + letters + ']|$)';
+  rule.regex = new RegExp(source, 'iu');
+  return rule.regex;
 }
 
 function firstRegionMatch(name, rules, selected) {
@@ -28,7 +35,7 @@ function firstRegionMatch(name, rules, selected) {
   for (const rule of rules) {
     if (selected && rule.region !== selected) continue;
     if (!folded.includes(rule.folded)) continue;
-    const match = name.match(rule.regex);
+    const match = name.match(regionRegex(rule));
     if (match) return { region: rule.region, text: match[0].slice(rule.chinese ? 0 : (match[1] || '').length), rule: rule };
   }
   return null;

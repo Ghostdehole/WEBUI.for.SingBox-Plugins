@@ -14,6 +14,20 @@ test('generated standalone sources match the maintained offline fragments', () =
   execFileSync(process.execPath, [fileURLToPath(new URL('../scripts/build-naming.mjs', import.meta.url)), '--check']);
 });
 
+test('region patterns are compiled only for literal candidates and reused in one invocation', () => {
+  for (const id of [ids[1], ids[2], 'plugin-subscription-organizer']) {
+    let compiled = 0;
+    function CountedRegExp(pattern, flags) { compiled++; return new RegExp(pattern, flags); }
+    const plugin = loadPlugin(id, {Enabled:true,RenameMode:'flags'}, {RegExp:CountedRegExp});
+    plugin.run('onSubscribe', [node('qzxqzx')], {});
+    assert.equal(compiled, 0, id + ': unmatched names must not compile the region table');
+    plugin.run('onSubscribe', [node('France node')], {});
+    assert.equal(compiled, 1, id + ': only the France alias is a candidate');
+    plugin.run('onSubscribe', [node('France node')], {});
+    assert.equal(compiled, 1, id + ': reuse the matching alias within this VM');
+  }
+});
+
 test('all 142 official regions are recognized by name without network or host APIs', () => {
   assert.equal(regions.length, 142);
   for (const region of regions) {
