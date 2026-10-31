@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {loadPlugin} from './helpers.mjs';
@@ -26,6 +27,34 @@ test('region patterns are compiled only for literal candidates and reused in one
     plugin.run('onSubscribe', [node('France node')], {});
     assert.equal(compiled, 1, id + ': reuse the matching alias within this VM');
   }
+});
+
+test('indexed matching equals the previous algorithm for all 907 aliases and Unicode boundaries', () => {
+  const names = [];
+  for (const region of regions) {
+    for (const keyword of [...region.keywords, ...region.subKeywords]) {
+      names.push(keyword, keyword + '01', 'X' + keyword + 'Y', '🇯🇵 ' + keyword,
+        'HK ' + keyword + ' Paris', keyword.toUpperCase(), 'İ𐐀\ud800 ' + keyword + ' 01');
+    }
+  }
+  assert.equal(names.length, 907 * 7);
+  names.push('HK Paris', 'France Kowloon', '🇭🇰 Tokyo', '🇯🇵 France', 'HAPPY', 'LOGIN',
+    'İstanbul', '剩余流量100 GB', 'remaining traffic: 100 GB', 'qzxqzx', '', '🇫🇷');
+  const shared = fs.readFileSync(new URL('../sources/naming/shared.js', import.meta.url), 'utf8');
+  const inspect = `JSON.stringify(names.map(function(name) {
+    const match=identifyRegion(name);
+    return match ? [match.region.emoji, match.country && match.country.text,
+      match.city && match.city.text, withFlag(name,match),
+      removeRegionMatch(removeRegionMatch(name,match.city),match.country)] : null;
+  }))`;
+  const evaluate = path => {
+    const context = vm.createContext({names}, {codeGeneration:{strings:false,wasm:false}});
+    const matcher = fs.readFileSync(new URL(path, import.meta.url), 'utf8');
+    return JSON.parse(vm.runInContext(shared + '\nconst RegionData=' + JSON.stringify(regions) + ';\n' + matcher + '\n' + inspect, context, {timeout:10000}));
+  };
+  const expected = evaluate('./fixtures/naming-regions-before-index.js');
+  const actual = evaluate('../sources/naming/regions.js');
+  for (let i=0; i<names.length; i++) assert.deepEqual(actual[i],expected[i],names[i]);
 });
 
 test('all 142 official regions are recognized by name without network or host APIs', () => {
