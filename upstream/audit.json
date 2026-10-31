@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "audited_at": "2026-10-31",
   "title": "官方插件全量路由器适配审计与本轮决定",
   "sources": [
@@ -48,21 +48,22 @@
         "source_sha256": "07084eed507ec38e2dea7800e09289bdc8bfcc52a4cc749317d677a7be2c8a83",
         "reason": "插件的浏览器支持资源，不是可安装插件入口；不计入100项插件入口覆盖。"
       }
-    ]
+    ],
+    "recheck_method": "fetch + ff-only后HEAD未变；逐文件核对100入口Git tree、工作树与git blob SHA256，重新提取宿主API，并逐项复核原依赖证据、当前归并ID与未覆盖范围。源码未变时保留前次详细审阅，未将未实现的后台服务标为完成。"
   },
   "release": {
-    "minimum_webui_version": "1.3.0",
+    "minimum_webui_version": "1.4.0",
     "configuration_baseline": "sing-box 1.14.x",
-    "plugin_count": 16,
+    "plugin_count": 14,
+    "total_catalog_entries": 20,
+    "compatibility_entries": 6,
     "target_ids": [
-      "plugin-index-the-proxy-name",
-      "plugin-modify-proxy-name",
-      "plugin-beautiful-node-name",
-      "plugin-duplicate-proxies-removal",
+      "plugin-subscription-organizer",
+      "plugin-network-diagnostics",
+      "plugin-dns-policy",
+      "plugin-client-policy",
       "plugin-hosts-management",
       "plugin-adguardhome",
-      "plugin-network-info",
-      "plugin-geoip-search",
       "plugin-media-unlock-checker",
       "plugin-speedtest",
       "plugin-outbound-chain-manager",
@@ -72,9 +73,17 @@
       "plugin-router-listeners",
       "plugin-router-urltest"
     ],
-    "scope": "16个独立后端插件，包含合并和受限替代；不是100个官方插件的全功能复刻。",
-    "default_off": "8个onGenerate配置插件默认不改变配置：5个Enabled=false，链路/规则集/监听3个为空列表；插件启停与参数分别管理。",
-    "naming_conflicts": "三个命名插件可共存安装但只启用一个；升级前先禁用多余命名插件。"
+    "compatibility_ids": [
+      "plugin-index-the-proxy-name",
+      "plugin-modify-proxy-name",
+      "plugin-beautiful-node-name",
+      "plugin-duplicate-proxies-removal",
+      "plugin-network-info",
+      "plugin-geoip-search"
+    ],
+    "scope": "14个按用途归并的当前后端插件，6个旧ID仅兼容更新；100项逐一核对，不等价全量桌面复刻。",
+    "default_off": "10个配置生成器默认Enabled关闭或空列表，订阅整理默认关闭；诊断仅显式手动运行。",
+    "migration": "deprecated/replaced_by只展示替代关系；显式禁用旧项、手动安装和配置新项，不自动迁移或替换。"
   },
   "disposition_labels": {
     "adapted": "已适配",
@@ -92,11 +101,11 @@
   "summary": {
     "excluded_unrelated": 11,
     "partial_alternative": 10,
-    "merged": 4,
+    "merged": 10,
     "deferred_capability": 18,
-    "partial_adaptation": 10,
+    "partial_adaptation": 8,
     "deferred_service": 20,
-    "adapted": 5,
+    "adapted": 1,
     "app_alternative": 10,
     "excluded_platform": 8,
     "documentation_only": 3,
@@ -188,6 +197,28 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "7f30c7ac00c8a36b7e5f683d9946c298b38532192d375bb8bdd8b38d6c082e06",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "图片档案浏览不是路由或代理管理；保留独立网页用途，不为它开放路由器文件/UI宿主权限。",
+        "remaining_scope": "与路由/代理诊断无关，加载远端图片及档案增加流量/缓存，不能为此开放后台文件或任意UI代码",
+        "source_host_apis": [
+          "Plugins.ClipboardSetText",
+          "Plugins.HttpGet",
+          "Plugins.MakeDir",
+          "Plugins.OpenDir",
+          "Plugins.OpenURI",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.message",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -231,6 +262,28 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "13b974d01b8d93603fc3b7ab42cd788da7513876a1c6cb7bc04d2a6533d52cec",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-add-rulesets"
+        ],
+        "current_target_ids": [
+          "plugin-add-rulesets"
+        ],
+        "decision": "合并按需规则引用用途；要求 sing-box source/binary，不转换 Clash YAML/classical 规则内容。",
+        "remaining_scope": "合并按需规则引用用途；要求 sing-box source/binary，不转换 Clash YAML/classical 规则内容。",
+        "source_host_apis": [
+          "Plugins.FileExists",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.useRulesetsStore"
+        ]
       }
     },
     {
@@ -282,6 +335,32 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "c42f01cd6e52cafd7822a38719895dd6a28acfd7275e7f886068f2c07c019cc2",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "current_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "decision": "将单节点链语义映射为 sing-box detour；不支持 Mihomo dialer-proxy/provider 宿主。",
+        "remaining_scope": "将单节点链语义映射为 sing-box detour；不支持 Mihomo dialer-proxy/provider 宿主。",
+        "source_host_apis": [
+          "Plugins.ReadFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.alert",
+          "Plugins.deepClone",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker",
+          "Plugins.useProfilesStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -337,6 +416,30 @@
             "component": "Input"
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "65f5cb52d057d400e7657817bbdde40f1e53c59837281864854ee694c7ea96cf",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "目标 Mihomo/CMFA 与 sing-box 不同；需要完整转换及认证短期分享，本轮不把 JSON 冒充 YAML。",
+        "remaining_scope": "目标 Mihomo/CMFA 与 sing-box 不同；需要完整转换及认证短期分享，本轮不把 JSON 冒充 YAML。",
+        "source_host_apis": [
+          "Plugins.Exec",
+          "Plugins.ReadFile",
+          "Plugins.StartServer",
+          "Plugins.YAML",
+          "Plugins.alert",
+          "Plugins.deepClone",
+          "Plugins.generateConfig",
+          "Plugins.picker",
+          "Plugins.useEnvStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useRulesetsStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -391,6 +494,36 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "87ae82c220a4075bdeb32db527fd0d409b37a6ec49dd9d29e8ff064c9675916d",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "current_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "decision": "合并按组展开链路用途，使用已经生成的 sing-box 成员图；不照搬 Clash provider/filter。",
+        "remaining_scope": "合并按组展开链路用途，使用已经生成的 sing-box 成员图；不照搬 Clash provider/filter。",
+        "source_host_apis": [
+          "Plugins.FileExists",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.generateConfig",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker",
+          "Plugins.sampleID",
+          "Plugins.useProfilesStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -455,6 +588,40 @@
           "onUninstall"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "3b41608348a52377ddcf15186a025bd1e64789d0372a8f48c594933b0fdb5d81",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-router-listeners"
+        ],
+        "current_target_ids": [
+          "plugin-router-listeners"
+        ],
+        "decision": "生成独立 mixed/http/socks 入站及绑定目标路由，检查配置内端口和 tag；不复制 Clash sub-rule，也不保证系统端口实际空闲。",
+        "remaining_scope": "生成独立 mixed/http/socks 入站及绑定目标路由，检查配置内端口和 tag；不复制 Clash sub-rule，也不保证系统端口实际空闲。",
+        "source_host_apis": [
+          "Plugins.ClipboardSetText",
+          "Plugins.Exec",
+          "Plugins.FileExists",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.generateConfig",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker",
+          "Plugins.sampleID",
+          "Plugins.useAppStore",
+          "Plugins.useEnvStore",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -498,6 +665,28 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "17434c8ea4a5717383fe6b230fbb9719d3c92c74276f1c20d5fd97cb8d845f51",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-add-rulesets"
+        ],
+        "current_target_ids": [
+          "plugin-add-rulesets"
+        ],
+        "decision": "按显式配置引用 sing-box 远程规则集并可增加路由；不整库导入官方规则列表或写规则库文件。",
+        "remaining_scope": "按显式配置引用 sing-box 远程规则集并可增加路由；不整库导入官方规则列表或写规则库文件。",
+        "source_host_apis": [
+          "Plugins.FileExists",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.useRulesetsStore"
+        ]
       }
     },
     {
@@ -564,6 +753,39 @@
             "component": "InputList"
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "15e5452de3696dcd03bbb956cce215ec4730888ac725fd6b64a6416f6fe5a64a",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-config-override"
+        ],
+        "current_target_ids": [
+          "plugin-config-override"
+        ],
+        "decision": "提供受限 JSON 深合并/数组追加；保护管理接口和现有监听，不读取任意文件或下载远程片段。",
+        "remaining_scope": "提供受限 JSON 深合并/数组追加；保护管理接口和现有监听，不读取任意文件或下载远程片段。",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Exec",
+          "Plugins.FileExists",
+          "Plugins.MakeDir",
+          "Plugins.OpenDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.Requests",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.getKernelFileName",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useAppStore",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -626,6 +848,40 @@
           "onUninstall"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "2522ab3fee23019d0c90459117d77e4a8806eb79f4a8d619b2d5ec1f7e3474b0",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "未加载订阅的独立测试核心需专门作业生命周期；主程序运行核心延迟测试不等价自动清理订阅。",
+        "remaining_scope": "未加载订阅的独立测试核心需专门作业生命周期；主程序运行核心延迟测试不等价自动清理订阅。",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.HttpGet",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.createAsyncPool",
+          "Plugins.deepClone",
+          "Plugins.generateSecureKey",
+          "Plugins.getKernelFileName",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker",
+          "Plugins.sampleID",
+          "Plugins.sleep",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -674,6 +930,26 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "d59b349c7f89fd137ad841c2023607382fd426a5d763931044a2797a44fb9a65",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "原生配置到 GUI 的无损、跨资源事务导入尚未实现；不能靠普通配置覆盖替代。",
+        "remaining_scope": "原生配置到 GUI 的无损、跨资源事务导入尚未实现；不能靠普通配置覆盖替代。",
+        "source_host_apis": [
+          "Plugins.Requests",
+          "Plugins.WriteFile",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useAppStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -736,6 +1012,38 @@
           "onUninstall"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "c1b2df799a715cedb834cfde9327884b331078d8454b4f26835c5fd003910ae0",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-config-override"
+        ],
+        "current_target_ids": [
+          "plugin-config-override"
+        ],
+        "decision": "仅提供当前配置的局部 JSON 覆盖；没有完整原生 profile 管理、远程更新或原文与运行覆盖分离。",
+        "remaining_scope": "仅提供当前配置的局部 JSON 覆盖；没有完整原生 profile 管理、远程更新或原文与运行覆盖分离。",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Exec",
+          "Plugins.MakeDir",
+          "Plugins.OpenDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.Requests",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.getKernelFileName",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useAppStore",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -788,6 +1096,34 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "75f1adf6882a7996ba157c45cc9260720cc9bd5918e7bc1ebb1fc322354ad5c9",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "current_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "decision": "统一显式 detour 链转换，支持组叶节点，校验成员/既有detour组合环和冲突；不保留桌面链编辑窗口。",
+        "remaining_scope": "统一显式 detour 链转换，支持组叶节点，校验成员/既有detour组合环和冲突；不保留桌面链编辑窗口。",
+        "source_host_apis": [
+          "Plugins.FileExists",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.generateConfig",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker",
+          "Plugins.sampleID",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -836,6 +1172,28 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "0a3e93c2151e2b638e18504a48787dd0753cfb0d58c02813af5c2139ed0c4e9a",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "current_target_ids": [
+          "plugin-outbound-chain-manager"
+        ],
+        "decision": "合并链路用途为统一 detour 转换；不生成或覆盖用户脚本。",
+        "remaining_scope": "合并链路用途为统一 detour 转换；不生成或覆盖用户脚本。",
+        "source_host_apis": [
+          "Plugins.ClipboardSetText",
+          "Plugins.generateConfig",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -897,6 +1255,35 @@
             "component": "Input"
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "81e3997edbe2d2e6ae8e9414efeffe61e20685a9685097c7392cf5a507520be5",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-router-transparent-proxy"
+        ],
+        "current_target_ids": [
+          "plugin-router-transparent-proxy"
+        ],
+        "decision": "提取路由器 TUN/接口/排除网段与可选 DNS 劫持配置；没有跨设备分享服务器或自动系统网络规则。",
+        "remaining_scope": "提取路由器 TUN/接口/排除网段与可选 DNS 劫持配置；没有跨设备分享服务器或自动系统网络规则。",
+        "source_host_apis": [
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.StartServer",
+          "Plugins.alert",
+          "Plugins.deepClone",
+          "Plugins.generateConfig",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.useEnvStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useRulesetsStore"
+        ]
       }
     },
     {
@@ -953,6 +1340,31 @@
             "key": "Port",
             "component": "Input"
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "45e49d244a4ca2c7ac991009150e2dfb4f2da53119a9fa656479426f15b1c5bb",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "需认证、短期令牌、目标版本适配和路径清理的配置导出；本轮没有手机配置分享服务。",
+        "remaining_scope": "需认证、短期令牌、目标版本适配和路径清理的配置导出；本轮没有手机配置分享服务。",
+        "source_host_apis": [
+          "Plugins.Exec",
+          "Plugins.ReadFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.alert",
+          "Plugins.deepClone",
+          "Plugins.generateConfig",
+          "Plugins.isValidIPv4",
+          "Plugins.picker",
+          "Plugins.sampleID",
+          "Plugins.useEnvStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useRulesetsStore"
         ]
       }
     },
@@ -1015,6 +1427,26 @@
             "component": "Input"
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "9a877b3c76ccdfa95e41ad7b63916517562a3eee908269d5e4e4e3141c9f4be1",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "复用当前主程序原生 API 与监控界面；不另行注入监听或复制旧 Alpha 面板。",
+        "remaining_scope": "复用当前主程序原生 API 与监控界面；不另行注入监听或复制旧 Alpha 面板。",
+        "source_host_apis": [
+          "Plugins.BrowserOpenURL",
+          "Plugins.ClipboardSetText",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useAppStore",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -1064,6 +1496,32 @@
           "onRun"
         ],
         "controls": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "be41b58b2b727e03461ca4b2a8e27cce17ec94cbe52a4e3b5d0384b08171a743",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "完整 Go 编译需开发机/CI 的资源；路由器使用匹配架构的核心构建产物，本轮不提供设备内编译器。",
+        "remaining_scope": "完整 Go 编译需开发机/CI 的资源；路由器使用匹配架构的核心构建产物，本轮不提供设备内编译器。",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.OpenDir",
+          "Plugins.OpenURI",
+          "Plugins.ReadDir",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.alert",
+          "Plugins.formatBytes",
+          "Plugins.modal",
+          "Plugins.sleep"
+        ]
       }
     },
     {
@@ -1156,6 +1614,28 @@
             "key": "MacOSUploadScript",
             "component": "CodeEditor"
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "12eab610579bf5f8961d105ea1028c7af0f6ee556efb85447d8371940e01dc8e",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "配置含密钥，需要专用 token、明确选取与有界写接口；本轮没有原生 profile Gists 上传/同步。",
+        "remaining_scope": "配置含密钥，需要专用 token、明确选取与有界写接口；本轮没有原生 profile Gists 上传/同步。",
+        "source_host_apis": [
+          "Plugins.HttpPatch",
+          "Plugins.ReadFile",
+          "Plugins.deepClone",
+          "Plugins.generateConfig",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useAppSettingsStore",
+          "Plugins.usePluginsStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useRulesetsStore"
         ]
       }
     },
@@ -1251,6 +1731,44 @@
             "key": "LogLevel",
             "component": "Select"
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "40d099bb84664493388f562614653e474332c1e802e90919ba06f422707cd4a0",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "XHTTP/Reality 前置服务确有需求，但需预转换保真、受管 Xray、架构资产、端口/实例身份和回滚；未发布仅指向不存在 SOCKS 的半成品。",
+        "remaining_scope": "XHTTP/Reality 前置服务确有需求，但需预转换保真、受管 Xray、架构资产、端口/实例身份和回滚；未发布仅指向不存在 SOCKS 的半成品。",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.HttpGet",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.alert",
+          "Plugins.base64Decode",
+          "Plugins.base64Encode",
+          "Plugins.confirm",
+          "Plugins.getGitHubApiAuthorization",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.usePluginsStore",
+          "Plugins.useSubscribesStore"
         ]
       }
     },
@@ -1353,6 +1871,42 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "b40d7e847babcecf82add51d1308b2f07b18628b1fb5c618f0802a481a536fd6",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-adguardhome"
+        ],
+        "current_target_ids": [
+          "plugin-adguardhome"
+        ],
+        "decision": "仅将已运行的 AdGuardHome 对接到 sing-box DNS；不下载、安装、升级、备份或启动 daemon。",
+        "remaining_scope": "DNS 53/20053与dnsmasq和sing-box DNS劫持/上游可能形成循环；GUI退出即停DNS不适合网关；原始下载按os/arch拼接且无供应链校验",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.KillProcess",
+          "Plugins.MoveFile",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipTarGZFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.confirm",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -1429,6 +1983,32 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "d47d25536d60afc37f57a369c92d97998900344f069082985cde6063ab69a3d7",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "签到属于独立账号任务；需要受保护凭据、受限 POST 与调度事务，本轮不发布。",
+        "remaining_scope": "不是代理/网关能力；多账号refresh token集中存放路由器扩大泄漏面；GET/HEAD诊断不覆盖POST和令牌轮换",
+        "source_host_apis": [
+          "Plugins.ClipboardSetText",
+          "Plugins.FileExists",
+          "Plugins.HttpPost",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.deepClone",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.sleep",
+          "Plugins.usePluginsStore"
+        ]
       }
     },
     {
@@ -1439,7 +2019,7 @@
       "disposition": "partial_alternative",
       "disposition_label": "部分能力替代",
       "target_ids": [
-        "plugin-network-info"
+        "plugin-network-diagnostics"
       ],
       "conclusion": "以路由器出口 trace/连通报告替代网络自查需求；未复制 Claude 专项判断及浏览器语言、字体、时区指纹。",
       "review": {
@@ -1489,6 +2069,24 @@
               10
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "b2a206efe2c44698e8dcf8a64a834861554f9cfb330745a5c9a03a9b8d35633e",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-network-info"
+        ],
+        "current_target_ids": [
+          "plugin-network-diagnostics"
+        ],
+        "decision": "以路由器出口 trace/连通报告替代网络自查需求；未复制 Claude 专项判断及浏览器语言、字体、时区指纹。",
+        "remaining_scope": "网络请求在后端而语言/字体属于访问者浏览器，两者混合不能推断网关身份；原标题的综合判定不是可靠封锁结论",
+        "source_host_apis": [
+          "Plugins.HttpGet",
+          "Plugins.modal"
         ]
       }
     },
@@ -1560,6 +2158,28 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "0e2f24ba5745226c037962477f0195e5a31361c256b92731352fccf853c94a36",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-router-urltest"
+        ],
+        "current_target_ids": [
+          "plugin-router-urltest"
+        ],
+        "decision": "提供核心 URLTest 持续探测选择；未实现日志失败计数、阈值窗口、冷却、按序故障转移和历史通知。",
+        "remaining_scope": "本项目强制native API并删除clash_api；前端关闭会失去监听；与urltest/下载守卫/人工切换竞争；日志失败可能是目标故障而非节点故障",
+        "source_host_apis": [
+          "Plugins.HttpGet",
+          "Plugins.Notify",
+          "Plugins.handleUseProxy",
+          "Plugins.modal",
+          "Plugins.useKernelApiStore",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -1621,6 +2241,25 @@
               109
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "e4659a7f8d229a5acdaa45fe3d912fab150cdb2e3d710d93fe6b35ef9e40d6df",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "VPS 开关机、重装和快照应留专门管理控制面；本轮不向插件开放此类远端账号写操作。",
+        "remaining_scope": "不是透明代理控制；包含远程破坏性操作，API key拼入URL可能进日志",
+        "source_host_apis": [
+          "Plugins.HttpGet",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.formatBytes",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.prompt"
         ]
       }
     },
@@ -1723,6 +2362,38 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "71114bcc88b68f03a2d846bd4d58c88b3a877dc8a0082eb0e4ee5ec8f20b6d15",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-speedtest"
+        ],
+        "current_target_ids": [
+          "plugin-speedtest"
+        ],
+        "decision": "仅提供当前出口 64 KiB–8 MiB 有界 HTTP 样本，不切换生产节点、不批量排名、不保留桌面历史任务。",
+        "remaining_scope": "切换生产selector会影响全LAN；finally恢复可能覆盖用户并发选择；每节点最高60秒/并发30且写下载临时文件，不适合小闪存；Clash API与当前native冲突",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.Download",
+          "Plugins.HttpCancel",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.Requests",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.handleUseProxy",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -1730,12 +2401,12 @@
       "id": "plugin-beautiful-node-name",
       "source_url": "https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-beautiful-node-name.js",
       "source_sha256": "8a0b26aba6a1817deff69ab3a4c9e02275ce3c79b8e07497a3b35be5337dd81c",
-      "disposition": "adapted",
-      "disposition_label": "已适配",
+      "disposition": "merged",
+      "disposition_label": "已合并",
       "target_ids": [
-        "plugin-beautiful-node-name"
+        "plugin-subscription-organizer"
       ],
-      "conclusion": "移植完整地区/城市识别并保留旧参数、节点身份、内部引用和幂等；手动操作已有缓存，不重跑官方 UI/store 更新或二次过滤。",
+      "conclusion": "归并到订阅节点整理的 beautify 模式；保留 142 地区/907 关键词、城市/前缀/旧参数及身份修复。独立筛选显式启用，不重跑 metadata 过滤或官方 Store。",
       "review": {
         "file": "plugins/Generic/plugin-beautiful-node-name.js",
         "id": "plugin-beautiful-node-name",
@@ -1778,6 +2449,28 @@
               37
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "8a0b26aba6a1817deff69ab3a4c9e02275ce3c79b8e07497a3b35be5337dd81c",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-beautiful-node-name"
+        ],
+        "current_target_ids": [
+          "plugin-subscription-organizer"
+        ],
+        "decision": "归并到订阅节点整理的 beautify 模式；保留 142 地区/907 关键词、城市/前缀/旧参数及身份修复。独立筛选显式启用，不重跑 metadata 过滤或官方 Store。",
+        "remaining_scope": "重命名必须同步引用和稳定ID；和modify/index/去重附带改名叠加可能漂移；脚本原手动入口不是只处理已有缓存",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.prompt",
+          "Plugins.useSubscribesStore"
         ]
       }
     },
@@ -1846,6 +2539,27 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "0727b4e2c84226adb0ac41f84ccac37977536d2f968c8d982bbd24f9ede0e760",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "Sysinternals/Windows 证书库扫描不适用于 OpenWrt；本轮没有整机证书信任审计功能。",
+        "remaining_scope": "显式checkOS拒绝非Windows；不能代表路由器Go TLS信任，也不能替换证书链验证",
+        "source_host_apis": [
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.alert",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -1911,6 +2625,26 @@
               12
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "50a5a6351dad798d6aaefe60d51f5308f1f9100d2eb1fbeb7764714d965f9c3e",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "由主程序认证原生仪表盘承担监控/选择器入口；不复刻第三方面板 UI，不打开 Clash API 或向外传 secret。",
+        "remaining_scope": "本项目native API不是Clash REST；URL硬编码浏览器127.0.0.1指向访问者电脑；secret写第三方面板查询参数，HTTP与HTTPS WebUI混合内容",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.BrowserOpenURL",
+          "Plugins.handleChangeMode",
+          "Plugins.modal",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useAppStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.useProfilesStore"
         ]
       }
     },
@@ -2014,6 +2748,44 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "89b1392dd2e3e0da014f97481d386bb2e9be4bbb0ed86d91d84e86c09035562c",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "AI 兼容服务仍有使用场景，但安装、账号和 daemon 生命周期需独立服务管理，本轮不托管。",
+        "remaining_scope": "与透明代理无直接关系；需要持久账号凭据/独立网络端口和资源；当前架构判断不覆盖大量mips/arm路由器",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.ClipboardSetText",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.HttpGet",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.TcpPing",
+          "Plugins.UnzipTarGZFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.getGitHubApiAuthorization",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -2084,6 +2856,27 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "c6fc5d958744d9aece22f7039606729e9bfc49c2eb4bc60596fbeef85fe57a91",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "桌面账号用量/托盘功能不属于路由插件；不读取宿主或客户端凭据。",
+        "remaining_scope": "读取的是路由器用户目录而非使用者电脑；不应为此把个人会话凭据搬到网关；非代理诊断且不应自动读取任意HOME文件",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.APP_VERSION",
+          "Plugins.GetEnv",
+          "Plugins.HttpGet",
+          "Plugins.ReadFile",
+          "Plugins.UpdateTray",
+          "Plugins.formatRelativeTime",
+          "Plugins.modal",
+          "Plugins.useAppStore"
+        ]
       }
     },
     {
@@ -2127,6 +2920,19 @@
               1
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "ff666a6436584d786edf703aca68680e30e1576a947cc628225b2077b3661ffb",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "配置 schema/安全示例在文档和测试中说明，不作为实际路由插件上架。",
+        "remaining_scope": "当前后端无弹窗；直接日志输出全部配置可能泄漏密钥",
+        "source_host_apis": [
+          "Plugins.alert"
         ]
       }
     },
@@ -2214,6 +3020,30 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "62bbd26884b0f970864ee7a309dc994ba43ce391683862829a3a05c47d26c4fd",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "基础主题、颜色、字体沿用浏览器设置；未移植任意 CSS、背景资源管理或桌面托盘图标。",
+        "remaining_scope": "属于访问浏览器视觉偏好，后端修改不会影响浏览器系统字体/托盘；远程背景带请求隐私风险",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.CopyFile",
+          "Plugins.Download",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.RestartApp",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker"
+        ]
       }
     },
     {
@@ -2283,6 +3113,25 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "8f417cceab29fc69500ec0a77274800e3179c283022d56cdd9a59f8ccbd574cf",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "Live2D 装饰不是后台路由能力；未加载远端模型和脚本。",
+        "remaining_scope": "纯装饰；模型注明禁止再分发；本地地址在远程浏览器语义错误；动态外部代码不能进入可信管理origin",
+        "source_host_apis": [
+          "Plugins.BrowserOpenURL",
+          "Plugins.MakeDir",
+          "Plugins.OpenDir",
+          "Plugins.ReadDir",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.confirm"
+        ]
       }
     },
     {
@@ -2338,6 +3187,23 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "f2e27c9dcd1f74c38e3f139231dc44f32195edef85fa5ffb6de288d46b1c2054",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "吞吐低速不能直接判断网关故障；需独立后台负载/窗口/冷却和选择器协调，URLTest 不冒充此逻辑。",
+        "remaining_scope": "catalog说超阈值切换，源码实际低速触发；空闲低速会误判，前端确认不适合无人值守；与auto-failover/urltest竞争",
+        "source_host_apis": [
+          "Plugins.confirm",
+          "Plugins.formatBytes",
+          "Plugins.handleUseProxy",
+          "Plugins.message",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -2345,12 +3211,12 @@
       "id": "plugin-duplicate-proxies-removal",
       "source_url": "https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-duplicate-proxies-removal.js",
       "source_sha256": "123779178052e15215079a285a3447e59f121aff5b472a182a3f4e5d31919358",
-      "disposition": "adapted",
-      "disposition_label": "已适配",
+      "disposition": "merged",
+      "disposition_label": "已合并",
       "target_ids": [
-        "plugin-duplicate-proxies-removal"
+        "plugin-subscription-organizer"
       ],
-      "conclusion": "使用完整配置指纹而非仅 server:port 去重，保留不同凭据/协议/TLS并修复引用；去除上游隐式附加索引。",
+      "conclusion": "归并到订阅节点整理的可选完整配置去重；保留凭据/TLS/协议/detour不同连接并修复引用，遇不明确同名引用保守保留。旧 ID 保留兼容。",
       "review": {
         "file": "plugins/Generic/plugin-duplicate-proxies-removal.js",
         "id": "plugin-duplicate-proxies-removal",
@@ -2384,6 +3250,24 @@
               1
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "123779178052e15215079a285a3447e59f121aff5b472a182a3f4e5d31919358",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-duplicate-proxies-removal"
+        ],
+        "current_target_ids": [
+          "plugin-subscription-organizer"
+        ],
+        "decision": "归并到订阅节点整理的可选完整配置去重；保留凭据/TLS/协议/detour不同连接并修复引用，遇不明确同名引用保守保留。旧 ID 保留兼容。",
+        "remaining_scope": "同端口不同UUID/password/TLS/transport被错误删除；无server的端点会同归undefined；每次运行重复附索引且引用不重映射",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.message"
         ]
       }
     },
@@ -2459,6 +3343,27 @@
               85
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "4f1b58cfe5bbd413eda170b2c9924e1e6759609e613c93c40ee7f74e782109f2",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "固定证书链诊断有价值，但本轮未提供专门测试清单和 TLS 信任报告；通用网络错误不等于证书安全结论。",
+        "remaining_scope": "源码把官方GUI版本v1.28.1作为修复门槛不适用fork；无法连接不等于证书已阻断；当前network脱敏错误没有TLS类别；并发12需要预算",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.APP_VERSION",
+          "Plugins.BrowserOpenURL",
+          "Plugins.GetRequestProxy",
+          "Plugins.HttpGet",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore"
         ]
       }
     },
@@ -2568,6 +3473,44 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "b0e2f82e73c1882afdd067f2716a76d77b73412242e57e5b2dd5eda868827592",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "独立订阅测速核心、排序与删除仍需有界作业/结果预览/取消清理；已有运行核心测速并不覆盖全部功能。",
+        "remaining_scope": "生成配置含clash_api不兼容当前native；扫描端口有竞争；每订阅起核心耗路由器内存；失败自动删节点有破坏性，绕过现有订阅事务/引用维护",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.AbsolutePath",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.Requests",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.confirm",
+          "Plugins.createAsyncPool",
+          "Plugins.deepClone",
+          "Plugins.generateSecureKey",
+          "Plugins.getKernelFileName",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.picker",
+          "Plugins.sampleID",
+          "Plugins.sleep",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -2642,6 +3585,31 @@
               101
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "9fc25f17dc81d2c63d6071643da61969d6f98169d18d92a62063c370152fb0d7",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "LAN 文件服务需求保留给独立 NAS/受管服务；不在插件中开启额外无认证文件服务器。",
+        "remaining_scope": "非透明代理必需；无认证新监听面；startsWith目录前缀不足以阻止同前缀兄弟目录/符号链接；任意目录会暴露网关机密",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.ClipboardSetText",
+          "Plugins.Download",
+          "Plugins.MakeDir",
+          "Plugins.OpenDir",
+          "Plugins.OpenURI",
+          "Plugins.ReadDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.confirm",
+          "Plugins.message"
         ]
       }
     },
@@ -2727,6 +3695,36 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "1e9af9c3532a3a9d305f0afdeeef5b315ebd266962b293074ac35f85bcd409d9",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "文件互传需认证、目录边界、磁盘配额与持久服务，不复刻桌面文件选择器或无认证上传端口。",
+        "remaining_scope": "浏览器iframe127.0.0.1错误；无认证对LAN开放，前缀路径检查薄弱，100GB会耗尽路由器存储；剪贴板属于用户电脑",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.ClipboardGetText",
+          "Plugins.ClipboardSetText",
+          "Plugins.Download",
+          "Plugins.FileExists",
+          "Plugins.ListServer",
+          "Plugins.MakeDir",
+          "Plugins.ReadDir",
+          "Plugins.ReadFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.formatBytes",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useAppSettingsStore"
+        ]
       }
     },
     {
@@ -2810,6 +3808,34 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "0d5adccd02254bfe948fbda25c9bc56d32bcd4b30b7b42a8942071d9b7323aaa",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "内网穿透是有效路由用途；应对接 frpc/procd 和受限配置动作，本轮不下载或启动 FRP。",
+        "remaining_scope": "源码不是Linux通用安装器；生命周期绑GUI且远程管理隧道涉及监听/防火墙/凭据；若路由又将frp上游走自身隧道会回环",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Download",
+          "Plugins.ExecBackground",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -2884,6 +3910,30 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "6154ae080816557de69db7abe35492bad166d84fe9653b91f4c12b16c9eacd9c",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "WARP 需密钥生成、显式注册 POST、秘密存储和 endpoint 验证；未提供只改节点而无可用服务的替代品。",
+        "remaining_scope": "sing-box分支config.endpoints=[warp]会覆盖已有endpoint；固定tag warp冲突；选组与detour不检引用/循环；私钥不该进入公开日志",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.AbsolutePath",
+          "Plugins.ClipboardSetText",
+          "Plugins.Exec",
+          "Plugins.HttpPost",
+          "Plugins.RemoveFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.prompt",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -2891,12 +3941,12 @@
       "id": "plugin-geoip-search",
       "source_url": "https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-geoip-search.js",
       "source_sha256": "a34ef22104c2d6116ee41ae55512c0e2b54e873af7b10435942d586d01d80749",
-      "disposition": "partial_adaptation",
-      "disposition_label": "已适配部分能力",
+      "disposition": "merged",
+      "disposition_label": "已合并",
       "target_ids": [
-        "plugin-geoip-search"
+        "plugin-network-diagnostics"
       ],
-      "conclusion": "用受限 HTTPS 查询显式 IP 或出口的地区/ASN/运营商；第三方信息非精确地理位置，也非欺诈风险或解锁结论。",
+      "conclusion": "归并到网络诊断的显式 IP/当前出口查询；仅地区/ASN/运营商近似信息，不替代离线 MMDB、风险评分或媒体解锁。旧 ID 保留兼容。",
       "review": {
         "file": "plugins/Generic/plugin-geoip-search.js",
         "id": "plugin-geoip-search",
@@ -2948,6 +3998,28 @@
               506
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "a34ef22104c2d6116ee41ae55512c0e2b54e873af7b10435942d586d01d80749",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-geoip-search"
+        ],
+        "current_target_ids": [
+          "plugin-network-diagnostics"
+        ],
+        "decision": "归并到网络诊断的显式 IP/当前出口查询；仅地区/ASN/运营商近似信息，不替代离线 MMDB、风险评分或媒体解锁。旧 ID 保留兼容。",
+        "remaining_scope": "不能把访问者IP和网关出口混淆；第三方限流/失败，输入需验证为IPv4/IPv6而非拼接任意路径",
+        "source_host_apis": [
+          "Plugins.HttpGet",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.prompt",
+          "Plugins.sleep"
         ]
       }
     },
@@ -3041,6 +4113,37 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "f7dc53447347bd81906077982264d0e2decf1f98717d9231290d88dd74688053",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "Git 仓库服务安装/数据库/账号生命周期由专用服务负责，本轮不在路由 WebUI 托管。",
+        "remaining_scope": "非网关核心功能，数据库/仓库IO与内存压力大；GUI root身份/进程托管不合适；localhost链接错误",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.HttpGet",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -3106,6 +4209,26 @@
               73
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "1fa6fffd5364f9f9758d3ce86169a2769242fb3c57ae218858ca783ce0051973",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "任意仓库提交浏览不是本轮路由功能；主程序版本信息不等价完整提交浏览器。",
+        "remaining_scope": "与路由用途弱但可帮助查看核心/插件更新；宿主token不能自动交给第三方插件",
+        "source_host_apis": [
+          "Plugins.BrowserOpenURL",
+          "Plugins.HttpGet",
+          "Plugins.ReadFile",
+          "Plugins.WriteFile",
+          "Plugins.formatRelativeTime",
+          "Plugins.getGitHubApiAuthorization",
+          "Plugins.message",
+          "Plugins.modal"
         ]
       }
     },
@@ -3195,6 +4318,28 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "2b6a812b0c4e710dcbed34e82206d040d5e9b0291f18cb9ce7285f6a2fa7241d",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "工作流、artifact、release/tag 写入删除留 GitHub 控制面；不将仓库管理 token 交给通用脚本。",
+        "remaining_scope": "不是单纯更新查看，拥有删除release/tag等远程写权限；路由器插件不应继承仓库管理token",
+        "source_host_apis": [
+          "Plugins.BrowserOpenURL",
+          "Plugins.HttpDelete",
+          "Plugins.HttpGet",
+          "Plugins.HttpPut",
+          "Plugins.asyncPool",
+          "Plugins.confirm",
+          "Plugins.formatBytes",
+          "Plugins.formatRelativeTime",
+          "Plugins.message",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -3230,6 +4375,17 @@
         "conflicts_and_limits": "纯装饰，和路由配置/服务无关；需要在管理origin执行UI代码",
         "recommendation": "不作为后台插件移植；若需要作为浏览器本地偏好内建。",
         "source_evidence": []
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "952f33b3180ed45072f2752f34b1f5876e8225528ae4b0d5a90b7d44352d9cf8",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "浏览器装饰不作为后台路由插件发布，未实现全局 DOM 注入。",
+        "remaining_scope": "纯装饰，和路由配置/服务无关；需要在管理origin执行UI代码",
+        "source_host_apis": []
       }
     },
     {
@@ -3332,6 +4488,52 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "1eb395635dfeb8ed11c1e9b95d247dd17f6cfe31e939409895e7d5039b1992f9",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "助手如需实现应走独立受控工具和审计设计；本轮不开放任意 root shell、文件或全资源管理。",
+        "remaining_scope": "完整权限可直接运行root命令与更改配置；普通权限仍会读取文件/将结果发模型；UI提示不是操作系统隔离；直接移植会突破当前插件边界",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.CopyFile",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.FileExists",
+          "Plugins.FileSHA256",
+          "Plugins.HttpCancel",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.PROJECT_URL",
+          "Plugins.ReadDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.Requests",
+          "Plugins.TG_GROUP",
+          "Plugins.TcpPing",
+          "Plugins.TcpRequest",
+          "Plugins.UdpRequest",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.formatDate",
+          "Plugins.getAppDts",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.throttle",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.usePluginsStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useRulesetsStore",
+          "Plugins.useScheduledTasksStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -3422,6 +4624,50 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "d3075016f9b2e60da889adc1bc66d4da4771095ab2f61e53395d3fc46d1456ea",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "复用主程序已认证 HTTP/RPC；不另建监听端口，也不宣称兼容官方全部 REST/桌面窗口端点。",
+        "remaining_scope": "现有WebUI已有受认证RPC/HTTP；脚本仅0.0.0.0强制secret，绑定LAN IP或IPv6可无secret；新增服务器绕过统一认证/事务",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.APP_VERSION",
+          "Plugins.CloseMMDB",
+          "Plugins.Download",
+          "Plugins.FileExists",
+          "Plugins.ListServer",
+          "Plugins.MakeDir",
+          "Plugins.OpenMMDB",
+          "Plugins.QueryMMDB",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.WindowHide",
+          "Plugins.WindowSetAlwaysOnTop",
+          "Plugins.WindowShow",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.base64Decode",
+          "Plugins.deepAssign",
+          "Plugins.generateConfig",
+          "Plugins.handleChangeMode",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.usePluginsStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useRulesetsStore",
+          "Plugins.useScheduledTasksStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -3478,6 +4724,26 @@
               2
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "be731ca8339fdd4e03efaa75283a3756c1b85985a7ec8dc0a7c9d40fcf13b15f",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-hosts-management"
+        ],
+        "current_target_ids": [
+          "plugin-hosts-management"
+        ],
+        "decision": "转为 sing-box DNS hosts 映射和作用域规则；不覆盖 /etc/hosts，不管理三份系统 hosts 预设。",
+        "remaining_scope": "网关/etc/hosts含系统/接口条目，整文件覆盖会破坏本机解析；dnsmasq与sing-box hosts源不一定共同读取，不能保证LAN生效",
+        "source_host_apis": [
+          "Plugins.WriteFile",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.useEnvStore"
         ]
       }
     },
@@ -3565,6 +4831,33 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "c78b55306ec8e006084c04b9e58f8c7641c200735fe4f853e3181b4a5bfe3021",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "Windows 全局热键属于访问者电脑，本轮不从路由器注册或监听客户端系统热键。",
+        "remaining_scope": "路由器没有访问者键盘，二进制限定Windows；远程浏览器本地快捷键不应让网关启动全局键盘服务",
+        "source_host_apis": [
+          "Plugins.Download",
+          "Plugins.ExecBackground",
+          "Plugins.HttpDelete",
+          "Plugins.HttpGet",
+          "Plugins.HttpPost",
+          "Plugins.KillProcess",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.deepClone",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -3572,12 +4865,12 @@
       "id": "plugin-index-the-proxy-name",
       "source_url": "https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-index-the-proxy-name.js",
       "source_sha256": "a9dae53e1054f3c01267d597f6e12d3fcb362172e89c9fe80c1c4603fd261a33",
-      "disposition": "adapted",
-      "disposition_label": "已适配",
+      "disposition": "merged",
+      "disposition_label": "已合并",
       "target_ids": [
-        "plugin-index-the-proxy-name"
+        "plugin-subscription-organizer"
       ],
-      "conclusion": "保持索引功能，增加稳定重复执行、节点 ID 保留和内部引用重映射；与另两命名插件互斥启用。",
+      "conclusion": "归并到订阅节点整理的 index 模式；保留稳定索引、节点 ID 和内部引用修复。旧 ID 仅供显式兼容更新，不自动替换。",
       "review": {
         "file": "plugins/Generic/plugin-index-the-proxy-name.js",
         "id": "plugin-index-the-proxy-name",
@@ -3610,6 +4903,23 @@
               1
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "a9dae53e1054f3c01267d597f6e12d3fcb362172e89c9fe80c1c4603fd261a33",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-index-the-proxy-name"
+        ],
+        "current_target_ids": [
+          "plugin-subscription-organizer"
+        ],
+        "decision": "归并到订阅节点整理的 index 模式；保留稳定索引、节点 ID 和内部引用修复。旧 ID 仅供显式兼容更新，不自动替换。",
+        "remaining_scope": "重复运行一直附加索引；顺序变化导致名称变化，需引用/稳定ID维护；和另外两命名插件叠加",
+        "source_host_apis": [
+          "Plugins.APP_TITLE"
         ]
       }
     },
@@ -3680,6 +4990,29 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "c26ccaa47d0d10794fed31eab9208b9d8e71c5386387f8677de4dba4f1b78f67",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "不能在路由器为访问者 Windows 安装字体/注册表；继续使用浏览器现有字体偏好。",
+        "remaining_scope": "路由器安装字体不会改变客户端浏览器字体；硬编码Windows",
+        "source_host_apis": [
+          "Plugins.CopyFile",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.FileExists",
+          "Plugins.RemoveFile",
+          "Plugins.RestartApp",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -3690,9 +5023,9 @@
       "disposition": "merged",
       "disposition_label": "已合并",
       "target_ids": [
-        "plugin-network-info"
+        "plugin-network-diagnostics"
       ],
-      "conclusion": "合并到路由器出口诊断；显示实际请求出口报告，不提供桌面状态栏/托盘。",
+      "conclusion": "归并到网络诊断的出口观察；不提供桌面状态栏/托盘，不认为每个目的站点或 LAN 客户端有相同出口。",
       "review": {
         "file": "plugins/Generic/plugin-ip-geolocation.js",
         "id": "plugin-ip-geolocation",
@@ -3742,6 +5075,26 @@
               13
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "a3f485d18f135aed0675515be86e40f2641e5610bc3435a2a381c2bc288995ba",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-network-info"
+        ],
+        "current_target_ids": [
+          "plugin-network-diagnostics"
+        ],
+        "decision": "归并到网络诊断的出口观察；不提供桌面状态栏/托盘，不认为每个目的站点或 LAN 客户端有相同出口。",
+        "remaining_scope": "依赖可用HTTP/mixed入口；不能拿浏览器出口替代路由器出口；源码Timeout:8000与HttpGet秒单位疑似不一致",
+        "source_host_apis": [
+          "Plugins.GetRequestProxy",
+          "Plugins.HttpGet",
+          "Plugins.alert",
+          "Plugins.useAppStore"
         ]
       }
     },
@@ -3815,6 +5168,26 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "b01612b951abd489d0829c055baae7278c07911572404abf1c31a14ccbe6c5be",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "使用主程序日志与诊断，不注入 Wails IPC hook；未复刻桌面 IPC 参数导出工具。",
+        "remaining_scope": "WebUI无Wails IPC；原始日志包含订阅URL/token/密码，有限字段脱敏不能保证安全",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.APP_VERSION",
+          "Plugins.alert",
+          "Plugins.deepClone",
+          "Plugins.formatDate",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -3868,6 +5241,19 @@
               44
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "9ae58cc382b5be38acc64025b554249de73390d7aebdca7ce68b55bbd986ae84",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "浏览器看板娘与模型主题不属于路由服务，本轮不移植。",
+        "remaining_scope": "纯浏览器装饰，动态第三方JS在管理origin执行；脚本自身注明违反插件规范",
+        "source_host_apis": [
+          "Plugins.sleep"
         ]
       }
     },
@@ -3960,6 +5346,25 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "3cb4022f51b326ab7d35c10ea4779d7b7cbb4657f68b5a916a1c2f5930ce4ffb",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-media-unlock-checker"
+        ],
+        "current_target_ids": [
+          "plugin-media-unlock-checker"
+        ],
+        "decision": "仅 Netflix、YouTube Premium、Spotify 的只读页面/服务观察；截断和网络错误为未知，未实现 Disney 注册/所有平台或播放验证。",
+        "remaining_scope": "站点反爬/页面变化与解锁不是等价；原超时竞速不取消底层请求；应明确使用网关核心出口而非浏览器/任意默认代理；部分含固定第三方应用token",
+        "source_host_apis": [
+          "Plugins.HttpGet",
+          "Plugins.HttpPost",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -4049,6 +5454,38 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "5e439c3a5eaf5b8ef4a655f07dad67f3402a6dc6baea672e3ddc2e09dd25bdfb",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "搜索引擎是独立高资源服务，本轮不安装、启动或管理其数据库。",
+        "remaining_scope": "资源/存储负担与透明代理无关；linux非amd64一律aarch64，对32位ARM/MIPS错误；未设置MasterKey仍可运行",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.HttpGet",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.getGitHubApiAuthorization",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -4111,6 +5548,21 @@
               4
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "4d8ec7b934535fa9c8279344205df13aaa3959a9697c34d0af0319091d748f77",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "使用本地认证原生仪表盘；未移植 MetaCubeXD 或外传 Clash controller/secret。",
+        "remaining_scope": "强制native API无clash_api；127.0.0.1是浏览器所在设备；读磁盘预览配置可能不是运行实例；secret写URL外传",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.ReadFile",
+          "Plugins.YAML"
         ]
       }
     },
@@ -4184,6 +5636,28 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "0f024dabcb01ee8e4f02132379f6ec94e0802c30bc824464ef65227434a16159",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "HTTPS 拦截、CA 信任和前置服务需单独受管部署及明确客户端配置，本轮不自动接管 LAN。",
+        "remaining_scope": "Windows专属二进制无可审计Linux分发；证书/信任/HTTPS拦截需逐客户端部署；修改系统代理非透明代理链路，可能回环",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.GetRequestProxy",
+          "Plugins.KillProcess",
+          "Plugins.ReadFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.message",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -4194,7 +5668,7 @@
       "disposition": "partial_alternative",
       "disposition_label": "部分能力替代",
       "target_ids": [
-        "plugin-geoip-search"
+        "plugin-network-diagnostics"
       ],
       "conclusion": "仅提供在线地区查询替代基础查 IP 需求；没有离线 MMDB 数据库、文件句柄或查询 API。",
       "review": {
@@ -4255,6 +5729,33 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "912bad2e5bbabe73e00f251f0aed82bdaaa139e8ab59660f88be5b6b00e24882",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-geoip-search"
+        ],
+        "current_target_ids": [
+          "plugin-network-diagnostics"
+        ],
+        "decision": "仅提供在线地区查询替代基础查 IP 需求；没有离线 MMDB 数据库、文件句柄或查询 API。",
+        "remaining_scope": "需要数据库下载校验/更新和内存映射引用计数；未自动改变路由；大数据库不适合盲目复制到闪存",
+        "source_host_apis": [
+          "Plugins.CloseMMDB",
+          "Plugins.Download",
+          "Plugins.OpenMMDB",
+          "Plugins.QueryMMDB",
+          "Plugins.RemoveFile",
+          "Plugins.StartServer",
+          "Plugins.alert",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.prompt",
+          "Plugins.sleep"
+        ]
       }
     },
     {
@@ -4262,12 +5763,12 @@
       "id": "plugin-modify-proxy-name",
       "source_url": "https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-modify-proxy-name.js",
       "source_sha256": "87dad8a74e777e6073af42b0815a183ec5433a57101c8c4a7009716a31a46be0",
-      "disposition": "adapted",
-      "disposition_label": "已适配",
+      "disposition": "merged",
+      "disposition_label": "已合并",
       "target_ids": [
-        "plugin-modify-proxy-name"
+        "plugin-subscription-organizer"
       ],
-      "conclusion": "扩充完整地区和兼容别名，保留 flag/移除关键词/索引参数及引用修复；边界匹配避免普通单词误命中。",
+      "conclusion": "归并到订阅节点整理的 flags 模式；完整地区/别名、旧旗帜/关键词/索引参数与引用修复继续保留。旧 ID 保留兼容。",
       "review": {
         "file": "plugins/Generic/plugin-modify-proxy-name.js",
         "id": "plugin-modify-proxy-name",
@@ -4300,6 +5801,23 @@
               168
             ]
           }
+        ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "87dad8a74e777e6073af42b0815a183ec5433a57101c8c4a7009716a31a46be0",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-modify-proxy-name"
+        ],
+        "current_target_ids": [
+          "plugin-subscription-organizer"
+        ],
+        "decision": "归并到订阅节点整理的 flags 模式；完整地区/别名、旧旗帜/关键词/索引参数与引用修复继续保留。旧 ID 保留兼容。",
+        "remaining_scope": "重复处理可能重复序号；普通对象seenNames遭特殊名称键影响；名称变化需同步引用与稳定ID；和beautify/index目的重叠",
+        "source_host_apis": [
+          "Plugins.APP_TITLE"
         ]
       }
     },
@@ -4362,6 +5880,24 @@
             ]
           }
         ]
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "9aef83c3af85039f8d6dc77ec59c6323adbd98b8ddf6e7e3d78ae92e80cade3b",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "音频播放/频谱属于客户端媒体功能；本轮不授予访问路由器任意音频目录的能力。",
+        "remaining_scope": "音频播放在浏览器而目录在网关；localhost地址错误；媒体服务器与代理管理无关",
+        "source_host_apis": [
+          "Plugins.ReadDir",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useAppSettingsStore"
+        ]
       }
     },
     {
@@ -4369,12 +5905,12 @@
       "id": "plugin-network-info",
       "source_url": "https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-network-info.js",
       "source_sha256": "831011c72ac46e799ad92cfef15e5cbfa25e2ad8ae49391fec370435cb985c84",
-      "disposition": "partial_adaptation",
-      "disposition_label": "已适配部分能力",
+      "disposition": "merged",
+      "disposition_label": "已合并",
       "target_ids": [
-        "plugin-network-info"
+        "plugin-network-diagnostics"
       ],
-      "conclusion": "合并出口 trace 和最多六个站点 HEAD 连通诊断；不复制全部第三方 IP 提供商或桌面弹窗实现。",
+      "conclusion": "归并到网络诊断：出口 trace 与最多六站点 HEAD 按需组合；不复制全部 IP 提供商或桌面弹窗，旧 ID 保留兼容。",
       "review": {
         "file": "plugins/Generic/plugin-network-info.js",
         "id": "plugin-network-info",
@@ -4393,6 +5929,28 @@
           "外部 API 可失效并获知出口"
         ],
         "recommendation": "作为认证后台的手动诊断任务，复用请求代理策略、核心实例快照及超时/并发/响应体上限；明确直连或核心出口，不因暂无 HTTP 插件 API 排除"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "831011c72ac46e799ad92cfef15e5cbfa25e2ad8ae49391fec370435cb985c84",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-network-info"
+        ],
+        "current_target_ids": [
+          "plugin-network-diagnostics"
+        ],
+        "decision": "归并到网络诊断：出口 trace 与最多六站点 HEAD 按需组合；不复制全部 IP 提供商或桌面弹窗，旧 ID 保留兼容。",
+        "remaining_scope": "作为认证后台的手动诊断任务，复用请求代理策略、核心实例快照及超时/并发/响应体上限；明确直连或核心出口，不因暂无 HTTP 插件 API 排除",
+        "source_host_apis": [
+          "Plugins.HttpCancel",
+          "Plugins.Requests",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -4424,6 +5982,25 @@
           "不能把 ICS 映射为 OpenWrt 任意 shell"
         ],
         "recommendation": "以 OpenWrt/Linux 网络服务能力重写：区分 fw3/fw4、LAN/WAN/TUN、DHCP/DNS，与现有防火墙配置协调；具备管理网段保留、事务回滚和重启恢复"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "4501c0fc8157534322e646bfe0c9c0476e2de0049cebf714e9d7a348d24a7fd3",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-router-transparent-proxy"
+        ],
+        "current_target_ids": [
+          "plugin-router-transparent-proxy"
+        ],
+        "decision": "保留 LAN 透明代理需求，以显式 TUN 配置实现部分用途；没有 Windows ICS、自动网卡共享、系统防火墙/DHCP改写。",
+        "remaining_scope": "以 OpenWrt/Linux 网络服务能力重写：区分 fw3/fw4、LAN/WAN/TUN、DHCP/DNS，与现有防火墙配置协调；具备管理网段保留、事务回滚和重启恢复",
+        "source_host_apis": [
+          "Plugins.Exec",
+          "Plugins.message",
+          "Plugins.picker"
+        ]
       }
     },
     {
@@ -4453,6 +6030,27 @@
           "表单必填不等于核心配置有效"
         ],
         "recommendation": "将版本固定、校验并保留许可的转换库打包；浏览器负责编辑，后端验证本机核心 schema 后按订阅事务保存；可先实现 sing-box 可支持协议，明确不支持项"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "6b9133b2fbdba5bbfedf747ca3f74c92dd038ca19e12324c284c142fee1a77e1",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "协议表单与导出有价值；需要固定版本转换库、当前核心字段验证及持久化事务，本轮未移植。",
+        "remaining_scope": "将版本固定、校验并保留许可的转换库打包；浏览器负责编辑，后端验证本机核心 schema 后按订阅事务保存；可先实现 sing-box 可支持协议，明确不支持项",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.ClipboardSetText",
+          "Plugins.Download",
+          "Plugins.HttpGet",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.YAML",
+          "Plugins.message",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -4482,6 +6080,32 @@
           "反向转换依赖原始格式缓存"
         ],
         "recommendation": "采用固定版本转换库和明确的类型映射，保留支持字段；有界缓存原始内容；前后端共享导入/导出接口，不能仅因无动态 import 放弃"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "f2132304ff12c772cff3c0fee795bc1daefcccd80a260e544935765bbb31325f",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "多格式完整转换需在订阅验证前接入固定版本转换器，保留未知/目标字段；本轮不加载远程 ESM，也不声称所有格式已兼容。",
+        "remaining_scope": "采用固定版本转换库和明确的类型映射，保留支持字段；有界缓存原始内容；前后端共享导入/导出接口，不能仅因无动态 import 放弃",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.ClipboardSetText",
+          "Plugins.Download",
+          "Plugins.FileExists",
+          "Plugins.HttpGet",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.prompt"
+        ]
       }
     },
     {
@@ -4512,6 +6136,21 @@
           "把 secret 放入第三方 URL 查询参数"
         ],
         "recommendation": "优先内置原生状态/流量/选择器 UI；如显式支持兼容仪表盘，使用自托管资源及认证同源代理，勿为插件强制启用公开 Clash API"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "9a289dac749f3510b9a17489fe6c2c1c9be4e1720a32f4d6c7f328c78fd037d2",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "使用主程序原生仪表盘；不向第三方 URL 传管理 secret，不启用额外 Clash 端口。",
+        "remaining_scope": "优先内置原生状态/流量/选择器 UI；如显式支持兼容仪表盘，使用自托管资源及认证同源代理，勿为插件强制启用公开 Clash API",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.ReadFile",
+          "Plugins.YAML"
+        ]
       }
     },
     {
@@ -4542,6 +6181,40 @@
           "管理密码/禁用二步验证属敏感操作"
         ],
         "recommendation": "作为独立受控服务或连接已安装 OpenList，使用 procd/可靠进程身份、存储配额、原子更新、端口认证；支持实际架构后列为可选服务"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "895758a8c63e07be19fc1bba7f86e68306c69dd3782736fa1219aef05303f345",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "NAS 用途可保留，但需平台/ABI匹配、受管进程、持久存储和认证，本轮不安装 OpenList。",
+        "remaining_scope": "作为独立受控服务或连接已安装 OpenList，使用 procd/可靠进程身份、存储配额、原子更新、端口认证；支持实际架构后列为可选服务",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.HttpGet",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.getGitHubApiAuthorization",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.prompt",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -4570,6 +6243,20 @@
           "不能复制桌面布局假设"
         ],
         "recommendation": "移植为当前页面的本地浏览器偏好并正确释放监听，不要求高权限后台插件"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "2036d3b83e14fac213df006af0dd45a04433be3c2de3d5b52b9030f055a7c1bb",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "可作为本地浏览器交互偏好，原 DOM/按钮结构需适配；本轮未复制滚轮逻辑。",
+        "remaining_scope": "移植为当前页面的本地浏览器偏好并正确释放监听，不要求高权限后台插件",
+        "source_host_apis": [
+          "Plugins.useAppSettingsStore",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -4600,6 +6287,26 @@
           "PAC 不等于透明代理"
         ],
         "recommendation": "后台持久化 PAC 文本，不执行其中 JS；管理接口认证、PAC 获取限定可信 LAN，正确公布路由器地址，校验代理端点与防火墙作用域"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "7b59edbcefd4fe5c0b0311952f03c561244b98c60e810615112f363fd10c2123",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "路由器 PAC 服务有实用性，需后台持久化、正确 LAN 地址和访问范围；本轮没有独立 PAC 服务。",
+        "remaining_scope": "后台持久化 PAC 文本，不执行其中 JS；管理接口认证、PAC 获取限定可信 LAN，正确公布路由器地址，校验代理端点与防火墙作用域",
+        "source_host_apis": [
+          "Plugins.ClipboardSetText",
+          "Plugins.ListServer",
+          "Plugins.ReadFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.WriteFile",
+          "Plugins.message",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -4628,6 +6335,27 @@
           "桌面 TUN 与全 LAN 透明代理不同"
         ],
         "recommendation": "改为当前类型化模板和 tag 查找；加入 /dev/net/tun、权限、fw3/fw4、dnsmasq 和管理网段诊断；明确 TUN 内 DNS 劫持不会自动接管发往 LAN IP:53 的流量"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "c10aead481b2df2c9fbd97e7f866f4179ea63426b5d600aeae47f4f85b65ff81",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "路由器完整引导需类型化模板和环境诊断；现有配置插件不等价自动创建订阅/配置的向导。",
+        "remaining_scope": "改为当前类型化模板和 tag 查找；加入 /dev/net/tun、权限、fw3/fw4、dnsmasq 和管理网段诊断；明确 TUN 内 DNS 劫持不会自动接管发往 LAN IP:53 的流量",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.HttpGet",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.sleep",
+          "Plugins.useAppStore",
+          "Plugins.useProfilesStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -4656,6 +6384,33 @@
           "桌面命令在 OpenWrt 不存在"
         ],
         "recommendation": "不移植系统壁纸操作；若保留体验，仅提供浏览器本地背景主题，限制远程资源和存储"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "126a5f317bac3c468ae59dc5ba549964c2a290e7c7b805be6fccc0fa82bd2269",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "原功能改变系统桌面壁纸；无桌面路由器不能修改访问者的桌面，本轮也不提供壁纸下载历史。",
+        "remaining_scope": "不移植系统壁纸操作；若保留体验，仅提供浏览器本地背景主题，限制远程资源和存储",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.FileExists",
+          "Plugins.HttpGet",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.OpenDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -4684,6 +6439,38 @@
           "先覆盖后恢复失败不可靠"
         ],
         "recommendation": "合并到本项目已有应用更新机制，校验本仓兼容版本、完整包和摘要，原子切换并回滚；不作为任意插件覆盖 Web 根目录"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "0eb99678ef62c26554223cd45d3e4ac72b84cfee1f246f97f743192c955d0a4c",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "更新通过本 fork 主程序更新机制处理；不下载官方 GUI 前端覆盖 fork，也不复刻独立前端滚动通道。",
+        "remaining_scope": "合并到本项目已有应用更新机制，校验本仓兼容版本、完整包和摘要，原子切换并回滚；不作为任意插件覆盖 Web 根目录",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.APP_VERSION",
+          "Plugins.Download",
+          "Plugins.FileExists",
+          "Plugins.HttpGet",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WindowReloadApp",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.formatBytes",
+          "Plugins.formatDate",
+          "Plugins.formatRelativeTime",
+          "Plugins.getGitHubApiAuthorization",
+          "Plugins.message",
+          "Plugins.sleep",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useAppStore",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -4713,6 +6500,24 @@
           "共享路由文件不等于每用户阅读状态"
         ],
         "recommendation": "如保留，打包解析器，限额受控抓取 feed，安全内容渲染并把阅读偏好保存在浏览器；不影响路由服务"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "fb711599245c8eaee9c96532c69d89aed0b1fc83aeb009e31b4c397c23e43539",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "RSS 阅读是可选网页功能而非本轮路由能力；未加载远程解析脚本或文章 iframe。",
+        "remaining_scope": "如保留，打包解析器，限额受控抓取 feed，安全内容渲染并把阅读偏好保存在浏览器；不影响路由服务",
+        "source_host_apis": [
+          "Plugins.HttpGet",
+          "Plugins.OpenURI",
+          "Plugins.ReadFile",
+          "Plugins.WriteFile",
+          "Plugins.deepClone",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -4743,6 +6548,21 @@
           "需区分路由器直连与核心出口"
         ],
         "recommendation": "用认证后台任务复用请求策略、验证目标 URL/IP、隐藏凭据并限速；对外部服务失败给具体错误，不因此排除"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "cfc95bf15b4a9627592876560457c1321ddc1e7e85f4e51fa231cd68e6d4c576",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "商业风险查询需用户凭据、受限提供商请求和结果语义；现有 GeoIP 不替代风险评分。",
+        "remaining_scope": "用认证后台任务复用请求策略、验证目标 URL/IP、隐藏凭据并限速；对外部服务失败给具体错误，不因此排除",
+        "source_host_apis": [
+          "Plugins.HttpGet",
+          "Plugins.alert",
+          "Plugins.prompt"
+        ]
       }
     },
     {
@@ -4771,6 +6591,24 @@
           "无首帧时 chunks[0] 可能为空"
         ],
         "recommendation": "若保留，明确录制当前浏览器所在设备，HTTPS 用户手动授权，下载到客户端并释放资源；不默认写路由闪存"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "889c50ca3eee494e07fe4b706c53d47821e54c8f8970f4976bb23647fb817472",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "录制的是浏览器所在设备而非路由器；本轮不提供屏幕授权或视频写盘功能。",
+        "remaining_scope": "若保留，明确录制当前浏览器所在设备，HTTPS 用户手动授权，下载到客户端并释放资源；不默认写路由闪存",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.WriteFile",
+          "Plugins.formatDate",
+          "Plugins.message",
+          "Plugins.sleep"
+        ]
       }
     },
     {
@@ -4800,6 +6638,26 @@
           "动画对低端浏览器有成本"
         ],
         "recommendation": "以固定来源可验证资源、当前 UI 主题接口及本地浏览器偏好实现；限制 CSS 外链、支持减少动画和卸载清理；不赋予主题系统权限"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "ef91164268047e9e031ab5e653e57c3186adc5b3506e64d89802723db9b70dd1",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "基础个性化沿用浏览器主题设置；未迁移远程皮肤目录、任意 CSS、装饰事件和全局资源缓存。",
+        "remaining_scope": "以固定来源可验证资源、当前 UI 主题接口及本地浏览器偏好实现；限制 CSS 外链、支持减少动画和卸载清理；不赋予主题系统权限",
+        "source_host_apis": [
+          "Plugins.Download",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useAppStore"
+        ]
       }
     },
     {
@@ -4833,6 +6691,31 @@
           "与 urltest/其它自动切换相互争抢"
         ],
         "recommendation": "简单需求合并为 sing-box urltest 生成插件由核心持续探测，清楚不等价 EWMA/日志故障转移；完整算法需后台监督器，限制并发，绑定核心实例，尊重人工选择并取消过期任务"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "2a92b86d1a2c0fae0287e8ac8bbd210dff2b90fcf978873cc65c0dd9608c5d3e",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-router-urltest"
+        ],
+        "current_target_ids": [
+          "plugin-router-urltest"
+        ],
+        "decision": "将基础自动选择需求交给核心 URLTest；不复刻 EWMA、熔断惩罚、桌面定时器、全部 provider 策略和历史。",
+        "remaining_scope": "简单需求合并为 sing-box urltest 生成插件由核心持续探测，清楚不等价 EWMA/日志故障转移；完整算法需后台监督器，限制并发，绑定核心实例，尊重人工选择并取消过期任务",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.asyncPool",
+          "Plugins.formatRelativeTime",
+          "Plugins.handleUseProxy",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.setIntervalImmediately",
+          "Plugins.useKernelApiStore",
+          "Plugins.useProfilesStore"
+        ]
       }
     },
     {
@@ -4865,6 +6748,42 @@
           "stdout 分块不保证完整 JSON"
         ],
         "recommendation": "验证许可和用户数据用量意愿；提供真实 GOARCH/libc 兼容资产或连接已安装测速工具，正确解包并校验，按行解析，限制任务并支持取消"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "32cc63cebdbf597f78ffba91c7566c9cd71ac72c3116ebda6e1bbd077f02b610",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-speedtest"
+        ],
+        "current_target_ids": [
+          "plugin-speedtest"
+        ],
+        "decision": "用当前出口限量 HTTP 样本替代基础测速需求；没有 Ookla CLI、服务器选择、上传测速或完整测速历史。",
+        "remaining_scope": "验证许可和用户数据用量意愿；提供真实 GOARCH/libc 兼容资产或连接已安装测速工具，正确解包并校验，按行解析，限制任务并支持取消",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.FileExists",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipGZFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.formatBytes",
+          "Plugins.formatDate",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.sleep",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -4894,6 +6813,28 @@
           "HTTP 测试不是物理链路上限"
         ],
         "recommendation": "后台流式丢弃数据按实际字节计量，显示消耗上限/出口策略，允许取消及超时，限制并发且不长期写闪存"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "50174d8bd16b09a7d75371cb0a760fd387e2db4068cf3a4c6e430db42fbeb88e",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-speedtest"
+        ],
+        "current_target_ids": [
+          "plugin-speedtest"
+        ],
+        "decision": "改为流式按实际字节统计的限量下载样本，不写闪存、不自动切换节点，不宣称线路极限吞吐。",
+        "remaining_scope": "后台流式丢弃数据按实际字节计量，显示消耗上限/出口策略，允许取消及超时，限制并发且不长期写闪存",
+        "source_host_apis": [
+          "Plugins.Download",
+          "Plugins.HttpGet",
+          "Plugins.RemoveFile",
+          "Plugins.alert",
+          "Plugins.message",
+          "Plugins.sleep"
+        ]
       }
     },
     {
@@ -4925,6 +6866,39 @@
           "无认证接口"
         ],
         "recommendation": "优先原生核心检测能力，确需 Mihomo 时采用隔离后台作业、内核分配端口、进程身份/超时/资源限额、受控鉴权；不默认常驻第二核心"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "e29a3f6fcc31ec078a94494867c26c5fad28c47fa4186f470486b48bb2b05b74",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "脚本测试侧车需要受管第二核心、端口和资源限额；本轮不下载 Mihomo 或提供 /start /stop 服务。",
+        "remaining_scope": "优先原生核心检测能力，确需 Mihomo 时采用隔离后台作业、内核分配端口、进程身份/超时/资源限额、受控鉴权；不默认常驻第二核心",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.HttpGet",
+          "Plugins.KillProcess",
+          "Plugins.ListServer",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.RemoveFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.UnzipGZFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.base64Decode",
+          "Plugins.getGitHubApiAuthorization",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -4956,6 +6930,37 @@
           "服务权限独立于脚本"
         ],
         "recommendation": "优先对接已安装 Sub-Store/procd 或隔离服务；支持匹配架构/ABI、原子更新、认证同源代理、持久数据目录，后台生命周期不随浏览器关闭"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "a9f1ccce687ad06f97a408fe875a8a7f814506fee67ec7de51137ad64ad25907",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "Sub-Store 是有效常驻路由服务，需 Node/ABI/内存匹配、认证同源入口及 procd 生命周期，本轮不托管。",
+        "remaining_scope": "优先对接已安装 Sub-Store/procd 或隔离服务；支持匹配架构/ABI、原子更新、认证同源代理、持久数据目录，后台生命周期不随浏览器关闭",
+        "source_host_apis": [
+          "Plugins.BrowserOpenURL",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.MoveFile",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.confirm",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sleep",
+          "Plugins.useAppStore",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -4988,6 +6993,36 @@
           "缓存写回和 UI 确认不能成为后台依赖"
         ],
         "recommendation": "使用版本固定隔离运行时或正式 Sub-Store 服务，定义有权限边界的存储/网络接口，认证同源前端；订阅导入独立事务，避免给远程下载 JS 全宿主权限"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "d03265c9f3c11b91519cda8123ada888e1ea6a235c3dca841a3df7a5e644185e",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "远程 AsyncFunction bundle、HTTP handler、存储和桌面 watch 需完整后台化；不因名称纯净版而直接执行下载脚本。",
+        "remaining_scope": "使用版本固定隔离运行时或正式 Sub-Store 服务，定义有权限边界的存储/网络接口，认证同源前端；订阅导入独立事务，避免给远程下载 JS 全宿主权限",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.BrowserOpenURL",
+          "Plugins.Download",
+          "Plugins.ListServer",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.SubStoreCache",
+          "Plugins.WriteFile",
+          "Plugins.base64Decode",
+          "Plugins.confirm",
+          "Plugins.debounce",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useAppStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -5018,6 +7053,32 @@
           "失败部分结果语义不清"
         ],
         "recommendation": "实现后台虚拟订阅 DAG、循环检测、缓存版本事务和共享抓取；完整节点指纹去重并修复内部引用，说明部分失败策略；UI 只编辑定义"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "6fd948c6692d411a4a35856a241be236fa473d9fae22cd2e1eefe3aafbf00af9",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "虚拟聚合订阅需 DAG 循环检查、事务缓存、完整节点指纹及引用修复；本轮未提供聚合订阅。",
+        "remaining_scope": "实现后台虚拟订阅 DAG、循环检测、缓存版本事务和共享抓取；完整节点指纹去重并修复内部引用，说明部分失败策略；UI 只编辑定义",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.FileExists",
+          "Plugins.MakeDir",
+          "Plugins.OpenDir",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.confirm",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sampleID",
+          "Plugins.useAppStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -5043,6 +7104,25 @@
           "覆盖已有 URL handler 会干扰客户端"
         ],
         "recommendation": "改为认证 WebUI 导入链接/二维码/粘贴预览；由用户确认实际导入内容，不修改访问者系统注册表"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "d3d40b5737cfe271431212fd2bdfd824962fd334cd955e648dfbda3efd23ae3b",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "快捷导入需要 WebUI 认证导入链接/预览；本轮不注册 Windows 协议处理器，也不称普通粘贴导入为等价插件。",
+        "remaining_scope": "改为认证 WebUI 导入链接/二维码/粘贴预览；由用户确认实际导入内容，不修改访问者系统注册表",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.AbsolutePath",
+          "Plugins.Exec",
+          "Plugins.WriteFile",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -5074,6 +7154,33 @@
           "AES 字符串加密不提供明确的认证完整性"
         ],
         "recommendation": "统一后端版本化备份格式和允许名单，认证加密、全部校验后事务恢复，分页/大小限制/凭据保护；Gists 仅作为传输适配器"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "8491217eba594ba4c2d54438c952a038d326eee7ebbd321b092a3d3bfacf3a0b",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "离站备份仍有价值，但需新存储 schema、认证加密、允许名单与原子恢复；本轮无 Gists 备份上传。",
+        "remaining_scope": "统一后端版本化备份格式和允许名单，认证加密、全部校验后事务恢复，分页/大小限制/凭据保护；Gists 仅作为传输适配器",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.HttpDelete",
+          "Plugins.HttpGet",
+          "Plugins.HttpPost",
+          "Plugins.ReadFile",
+          "Plugins.WindowReloadApp",
+          "Plugins.WriteFile",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.sleep",
+          "Plugins.useKernelApiStore",
+          "Plugins.usePluginsStore",
+          "Plugins.useRulesetsStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -5104,6 +7211,40 @@
           "浏览器 XML 和 shell 版本查询不必搬到插件"
         ],
         "recommendation": "后端 WebDAV 适配器加统一备份事务，合法成功码、URL/路径边界、响应大小、认证加密；版本走已有服务信息而非任意 Exec"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "bd6020c451dec5badec90fb5fc79c83141b2da7c7a1b85a703f125a6dee81383",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "WebDAV 备份需统一版本化备份事务和凭据保护；本轮无同步、恢复或远端删除。",
+        "remaining_scope": "后端 WebDAV 适配器加统一备份事务，合法成功码、URL/路径边界、响应大小、认证加密；版本走已有服务信息而非任意 Exec",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.APP_VERSION",
+          "Plugins.AbsolutePath",
+          "Plugins.Exec",
+          "Plugins.ReadFile",
+          "Plugins.Requests",
+          "Plugins.WindowReloadApp",
+          "Plugins.WriteFile",
+          "Plugins.base64Encode",
+          "Plugins.formatDate",
+          "Plugins.getKernelFileName",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.prompt",
+          "Plugins.sleep",
+          "Plugins.useAppSettingsStore",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore",
+          "Plugins.usePluginsStore",
+          "Plugins.useRulesetsStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -5135,6 +7276,36 @@
           "服务部署路径不宜直接信任"
         ],
         "recommendation": "共享有版本 schema 的后台备份/恢复事务，验证所有内容后原子提交并可回滚；传输服务可复用，远程部署单独显式能力，固定加密库且不执行远端脚本"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "18b143f17e7c7c544f319a7ba6664991d1a664515bd6d7d291a22d4fbf513120",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "gui-sync 的桌面 YAML/部署语义不适用于当前存储；需新格式及原子恢复，不把文件逐项覆盖当作可用备份。",
+        "remaining_scope": "共享有版本 schema 的后台备份/恢复事务，验证所有内容后原子提交并可回滚；传输服务可复用，远程部署单独显式能力，固定加密库且不执行远端脚本",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.HttpDelete",
+          "Plugins.HttpGet",
+          "Plugins.HttpPost",
+          "Plugins.ReadFile",
+          "Plugins.WindowReloadApp",
+          "Plugins.WriteFile",
+          "Plugins.YAML",
+          "Plugins.confirm",
+          "Plugins.formatDate",
+          "Plugins.generateConfig",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.sleep",
+          "Plugins.useKernelApiStore",
+          "Plugins.usePluginsStore",
+          "Plugins.useRulesetsStore",
+          "Plugins.useSubscribesStore"
+        ]
       }
     },
     {
@@ -5162,6 +7333,23 @@
           "浏览器关闭失效"
         ],
         "recommendation": "不移植桌面全局代理重设；路由器需后台核心/防火墙/TUN 实际健康检查及受控恢复，复用既有守护而不是另建抢占循环"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "74ec5fd74ecb19a45012bc37bf19e4bca21694f5a6e839b7307d26aebd63e5dc",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "桌面 OS 全局代理守卫不等于路由器 TUN/防火墙健康守护；本轮不定时重设系统代理或恢复透明策略。",
+        "remaining_scope": "不移植桌面全局代理重设；路由器需后台核心/防火墙/TUN 实际健康检查及受控恢复，复用既有守护而不是另建抢占循环",
+        "source_host_apis": [
+          "Plugins.message",
+          "Plugins.setIntervalImmediately",
+          "Plugins.useAppStore",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -5190,6 +7378,26 @@
           "客户端系统配置不属于路由器"
         ],
         "recommendation": "从路由目录排除原脚本，提供 LAN 代理/PAC 客户端设置说明；不要用防火墙脚本假扮 networksetup"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "3a83cd6ed57b5b773e61a045e407230c377640fde800d3dab9fe828d81d201f1",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "macOS networksetup/Thunderbolt Ethernet 代理无法对应 OpenWrt，未修改 LAN 客户端系统设置。",
+        "remaining_scope": "从路由目录排除原脚本，提供 LAN 代理/PAC 客户端设置说明；不要用防火墙脚本假扮 networksetup",
+        "source_host_apis": [
+          "Plugins.Exec",
+          "Plugins.confirm",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.useAppStore",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -5221,6 +7429,25 @@
           "凭据和 shell 引号易错"
         ],
         "recommendation": "保留安全的复制命令工具，显式区分路由器 shell 与客户端，读取实际 HTTP/mixed 入站及 IPv6/认证，进行 shell 转义，不自动执行或改系统环境"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "1815a3b2a0ebb4ca3ff40b97046f1b750b8a3d39ed7f7ade84a98c0290c2bac7",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "安全命令生成对 SSH/客户端有用，但需要区分主机、实际入站、IPv6和引号；本轮不设置客户端环境变量。",
+        "remaining_scope": "保留安全的复制命令工具，显式区分路由器 shell 与客户端，读取实际 HTTP/mixed 入站及 IPv6/认证，进行 shell 转义，不自动执行或改系统环境",
+        "source_host_apis": [
+          "Plugins.ClipboardSetText",
+          "Plugins.Exec",
+          "Plugins.message",
+          "Plugins.picker",
+          "Plugins.useAppStore",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -5249,6 +7476,30 @@
           "不是路由器后台流量统计"
         ],
         "recommendation": "不搬 EXE；将需求合并到原生核心状态/RSS 与统一后台流量统计，保留安装桌面工具的独立客户端说明即可"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "f23648d5b18e0b2af14e145e681c1ab4db128e0a902bb8092ad38f274819ae1b",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "基础状态可看主程序概览/核心 RSS；没有 Windows TrafficMonitor.exe、任务栏或其全部网卡监控能力。",
+        "remaining_scope": "不搬 EXE；将需求合并到原生核心状态/RSS 与统一后台流量统计，保留安装桌面工具的独立客户端说明即可",
+        "source_host_apis": [
+          "Plugins.Download",
+          "Plugins.ExecBackground",
+          "Plugins.KillProcess",
+          "Plugins.MoveFile",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.UnzipZIPFile",
+          "Plugins.WriteFile",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -5284,6 +7535,28 @@
           "多维组合仍可增大内存"
         ],
         "recommendation": "迁移为单一原生后台采集器和认证分页 API，按核心实例重置、保留真实 LAN 源地址、区分已归属/估计/未归属数据；固定保留期和总体配额，批量写盘，DNS 日志统计可选，浏览器只展示"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "05bb016c83f1525f450aa722c27ba39b601fa259184d4f4d328ccdf249269d97",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "长期客户端/节点/月度统计需单一后台采集器、留存配额和准确归属；概览瞬时流量不等价本插件。",
+        "remaining_scope": "迁移为单一原生后台采集器和认证分页 API，按核心实例重置、保留真实 LAN 源地址、区分已归属/估计/未归属数据；固定保留期和总体配额，批量写盘，DNS 日志统计可选，浏览器只展示",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.ReadDir",
+          "Plugins.ReadFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.WriteFile",
+          "Plugins.deepAssign",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -5316,6 +7589,28 @@
           "无认证"
         ],
         "recommendation": "与 vibe 版合并为一个后台遥测服务；不并行安装两个采集器或两个裸 HTTP 端口；准确说明数据仅覆盖核心可见流量"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "f36407580bac2033bf7d24d59e3c6dd2f19e401d27d647904c5ef7e60495e2dd",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "持久流量统计与 vibe 版应统一后台实现；本轮不启动额外 HTTP 统计端口或浏览器采集器。",
+        "remaining_scope": "与 vibe 版合并为一个后台遥测服务；不并行安装两个采集器或两个裸 HTTP 端口；准确说明数据仅覆盖核心可见流量",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.ReadDir",
+          "Plugins.ReadFile",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.WriteFile",
+          "Plugins.deepAssign",
+          "Plugins.formatDate",
+          "Plugins.message",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -5346,6 +7641,27 @@
           "权限不等于路由/DNS 生效"
         ],
         "recommendation": "重写为实际环境诊断和最小能力说明：/dev/net/tun、当前权限、fw3/fw4、内核特性、路由与 dnsmasq；不自动提权、不承诺全 LAN DNS 已接管"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "469e46c58a944eafefc186375b49a99a08bb56048ae0ca04e638728f4edaf13f",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [
+          "plugin-router-transparent-proxy"
+        ],
+        "current_target_ids": [
+          "plugin-router-transparent-proxy"
+        ],
+        "decision": "提供显式 TUN/可选 DNS 劫持配置和兼容说明；没有自动提权、setcap/setuid操作，也不保证固件环境可用。",
+        "remaining_scope": "重写为实际环境诊断和最小能力说明：/dev/net/tun、当前权限、fw3/fw4、内核特性、路由与 dnsmasq；不自动提权、不承诺全 LAN DNS 已接管",
+        "source_host_apis": [
+          "Plugins.APP_TITLE",
+          "Plugins.AbsolutePath",
+          "Plugins.alert",
+          "Plugins.getKernelFileName",
+          "Plugins.useEnvStore"
+        ]
       }
     },
     {
@@ -5375,6 +7691,27 @@
           "不是可受限后台 hook"
         ],
         "recommendation": "独立开发环境/沙盒预览工具，默认禁用且不随正式插件 API 获得宿主能力；不在主应用 eval"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "e7feb9990886d82a45f7e25225711a7e0137c69c444f1a5a02ad45aaeb7a326d",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "保留为独立开发参考，不在生产路由器开放热重载端口/new Function任意UI执行。",
+        "remaining_scope": "独立开发环境/沙盒预览工具，默认禁用且不随正式插件 API 获得宿主能力；不在主应用 eval",
+        "source_host_apis": [
+          "Plugins.Download",
+          "Plugins.FileExists",
+          "Plugins.ListServer",
+          "Plugins.StartServer",
+          "Plugins.StopServer",
+          "Plugins.alert",
+          "Plugins.base64Decode",
+          "Plugins.message",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -5401,6 +7738,20 @@
           "桌面 API 直接复制无法工作"
         ],
         "recommendation": "改写为当前声明式配置 schema 或受信任前端组件示例，说明前后端边界；不安装无实际功能的桌面样例"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "1904bf66590fa4ec1404067e2702ac9cc945ee61ed22691014d9486597739c8a",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "安全配置表单与后端 hook 示例由文档/测试承担；未复制 global Vue/桌面组件宿主。",
+        "remaining_scope": "改写为当前声明式配置 schema 或受信任前端组件示例，说明前后端边界；不安装无实际功能的桌面样例",
+        "source_host_apis": [
+          "Plugins.message",
+          "Plugins.modal"
+        ]
       }
     },
     {
@@ -5432,6 +7783,41 @@
           "下载文件名/空间需约束"
         ],
         "recommendation": "后台受控可选服务，验证架构/ABI，按域名及源设备做策略；独立管理员配置认证/密钥，CA 操作明确告知且不假设安装路由 CA 即覆盖 LAN；限制下载并遵守内容许可"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "5e482ab5f8acbdbb941786df7b492d44c0dd8dbce47e57f4c947950c8fca407a",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "媒体伴随代理需受管服务、架构/ABI与客户端 CA/路由设计；LAN 流量不能用本机进程名替代设备策略，本轮不安装。",
+        "remaining_scope": "后台受控可选服务，验证架构/ABI，按域名及源设备做策略；独立管理员配置认证/密钥，CA 操作明确告知且不假设安装路由 CA 即覆盖 LAN；限制下载并遵守内容许可",
+        "source_host_apis": [
+          "Plugins.AbsolutePath",
+          "Plugins.BrowserOpenURL",
+          "Plugins.Download",
+          "Plugins.Exec",
+          "Plugins.ExecBackground",
+          "Plugins.KillProcess",
+          "Plugins.MakeDir",
+          "Plugins.ProcessInfo",
+          "Plugins.ReadFile",
+          "Plugins.RemoveFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.debounce",
+          "Plugins.formatBytes",
+          "Plugins.formatDate",
+          "Plugins.handleUseProxy",
+          "Plugins.ignoredError",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.sleep",
+          "Plugins.useEnvStore",
+          "Plugins.useKernelApiStore"
+        ]
       }
     },
     {
@@ -5457,6 +7843,21 @@
           "远端路由器无法修改用户 Windows 沙盒权限"
         ],
         "recommendation": "路由插件目录不移植；必要时提供客户端指导，不能声称路由设置能解除 UWP 本地限制"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "e2d225e55f7c4618eb7ea9b4569c29d437814e1517eb6fad29e23236eb14bdd0",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "Windows AppContainer/CheckNetIsolation 属于客户端系统操作，路由器不能解除客户端沙盒限制。",
+        "remaining_scope": "路由插件目录不移植；必要时提供客户端指导，不能声称路由设置能解除 UWP 本地限制",
+        "source_host_apis": [
+          "Plugins.Exec",
+          "Plugins.message",
+          "Plugins.picker"
+        ]
       }
     },
     {
@@ -5490,7 +7891,87 @@
           "外部工单是用户主动通信"
         ],
         "recommendation": "实现受控后台面板适配器，登录前展示并确认目标 API 域，HTTPS/凭据转发边界、服务端密钥存储、健壮内容渲染、请求代际保护；工单仅用户显式操作；不因暂无 HTTP API 排除"
+      },
+      "recheck": {
+        "date": "2026-10-31",
+        "upstream_commit": "205ecacb0742a185947252cb91e5b11541c32a94",
+        "source_sha256": "6a217785abdd9162e96754e5cd60f07773ebf781d7b44561019467c93efd238b",
+        "source_changed_since_previous_review": false,
+        "previous_target_ids": [],
+        "current_target_ids": [],
+        "decision": "机场面板账号/订阅管理有价值；需 API 域确认、秘密存储、内容处理和显式工单动作，本轮未发布账号面板。",
+        "remaining_scope": "实现受控后台面板适配器，登录前展示并确认目标 API 域，HTTPS/凭据转发边界、服务端密钥存储、健壮内容渲染、请求代际保护；工单仅用户显式操作；不因暂无 HTTP API 排除",
+        "source_host_apis": [
+          "Plugins.ClipboardSetText",
+          "Plugins.HttpGet",
+          "Plugins.HttpPost",
+          "Plugins.ReadFile",
+          "Plugins.WriteFile",
+          "Plugins.alert",
+          "Plugins.confirm",
+          "Plugins.formatBytes",
+          "Plugins.formatDate",
+          "Plugins.message",
+          "Plugins.modal",
+          "Plugins.useSubscribesStore"
+        ]
       }
+    }
+  ],
+  "previous_release": {
+    "minimum_webui_version": "1.3.0",
+    "configuration_baseline": "sing-box 1.14.x",
+    "plugin_count": 16,
+    "target_ids": [
+      "plugin-index-the-proxy-name",
+      "plugin-modify-proxy-name",
+      "plugin-beautiful-node-name",
+      "plugin-duplicate-proxies-removal",
+      "plugin-hosts-management",
+      "plugin-adguardhome",
+      "plugin-network-info",
+      "plugin-geoip-search",
+      "plugin-media-unlock-checker",
+      "plugin-speedtest",
+      "plugin-outbound-chain-manager",
+      "plugin-config-override",
+      "plugin-add-rulesets",
+      "plugin-router-transparent-proxy",
+      "plugin-router-listeners",
+      "plugin-router-urltest"
+    ],
+    "scope": "16个独立后端插件，包含合并和受限替代；不是100个官方插件的全功能复刻。",
+    "default_off": "8个onGenerate配置插件默认不改变配置：5个Enabled=false，链路/规则集/监听3个为空列表；插件启停与参数分别管理。",
+    "naming_conflicts": "三个命名插件可共存安装但只启用一个；升级前先禁用多余命名插件。"
+  },
+  "reference_sources": [
+    {
+      "repository": "SagerNet/sing-box",
+      "version": "v1.14.2",
+      "file": "option/rule_dns.go",
+      "url": "https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule_dns.go",
+      "use": "核对DNS来源/域名/查询类型/已有规则集字段，独立编写受限生成器。"
+    },
+    {
+      "repository": "SagerNet/sing-box",
+      "version": "v1.14.2",
+      "file": "option/rule.go",
+      "url": "https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule.go",
+      "use": "核对客户端来源/入站/目的条件与route/reject动作，独立编写生成器。"
+    }
+  ],
+  "additional_capabilities": [
+    {
+      "id": "plugin-dns-policy",
+      "reason": "已有适配提供hosts/AdGuard接入，却缺少对已有解析器的显式条件分流；独立新增，不宣称官方插件一对一移植。"
+    },
+    {
+      "id": "plugin-client-policy",
+      "reason": "将设备策略从TUN创建中分离，适用于已有入站；旧ClientRules不自动删除，双向重叠检查要求明确迁移。"
+    },
+    {
+      "id": "plugin-subscription-organizer",
+      "reason": "归并原四个节点处理入口，补显式名称/协议筛选并修复过滤后的引用；不做格式转换或订阅聚合。"
     }
   ]
 }

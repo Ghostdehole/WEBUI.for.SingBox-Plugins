@@ -2117,5 +2117,2021 @@
       "0.__id_in_gui": "fresh-a"
     },
     "idempotent": true
+  },
+  {
+    "name": "DNS policy selects existing resolver without altering DNS final",
+    "plugin": "plugin-dns-policy",
+    "configuration": {
+      "Enabled": true,
+      "Position": "prepend",
+      "Rules": "[{\"domain_suffix\":[\"example.org\"],\"source_ip_cidr\":[\"192.168.8.0/24\"],\"query_type\":[\"A\",\"AAAA\"],\"server\":\"remote\"},{\"rule_set\":[\"example\"],\"server\":\"remote\"}]"
+    },
+    "input": {
+      "dns": {
+        "servers": [
+          {
+            "type": "local",
+            "tag": "local"
+          },
+          {
+            "type": "udp",
+            "tag": "remote",
+            "server": "192.0.2.53"
+          }
+        ],
+        "final": "local"
+      },
+      "outbounds": [
+        {
+          "type": "direct",
+          "tag": "direct"
+        },
+        {
+          "type": "selector",
+          "tag": "proxy",
+          "outbounds": [
+            "direct"
+          ]
+        }
+      ],
+      "inbounds": [
+        {
+          "type": "mixed",
+          "tag": "lan",
+          "listen": "127.0.0.1",
+          "listen_port": 18080
+        }
+      ],
+      "route": {
+        "default_domain_resolver": "local",
+        "rules": [
+          {
+            "port": [
+              53
+            ],
+            "action": "hijack-dns"
+          }
+        ],
+        "rule_set": [
+          {
+            "type": "inline",
+            "tag": "example",
+            "rules": [
+              {
+                "domain_suffix": [
+                  "example.org"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "checks": {
+      "dns.rules.0.server": "remote",
+      "dns.rules.0.source_ip_cidr.0": "192.168.8.0/24",
+      "dns.final": "local"
+    },
+    "idempotent": true,
+    "core_check": true
+  },
+  {
+    "name": "Client source policy retains DNS interception and uses existing outbound",
+    "plugin": "plugin-client-policy",
+    "configuration": {
+      "Enabled": true,
+      "Rules": "[{\"source_ip_cidr\":[\"192.168.8.2/32\"],\"inbound\":[\"lan\"],\"port\":[443],\"outbound\":\"proxy\"},{\"source_ip_cidr\":[\"fd00::42/128\"],\"action\":\"reject\"}]"
+    },
+    "input": {
+      "dns": {
+        "servers": [
+          {
+            "type": "local",
+            "tag": "local"
+          },
+          {
+            "type": "udp",
+            "tag": "remote",
+            "server": "192.0.2.53"
+          }
+        ],
+        "final": "local"
+      },
+      "outbounds": [
+        {
+          "type": "direct",
+          "tag": "direct"
+        },
+        {
+          "type": "selector",
+          "tag": "proxy",
+          "outbounds": [
+            "direct"
+          ]
+        }
+      ],
+      "inbounds": [
+        {
+          "type": "mixed",
+          "tag": "lan",
+          "listen": "127.0.0.1",
+          "listen_port": 18080
+        }
+      ],
+      "route": {
+        "default_domain_resolver": "local",
+        "rules": [
+          {
+            "port": [
+              53
+            ],
+            "action": "hijack-dns"
+          }
+        ],
+        "rule_set": [
+          {
+            "type": "inline",
+            "tag": "example",
+            "rules": [
+              {
+                "domain_suffix": [
+                  "example.org"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "checks": {
+      "route.rules.0.action": "hijack-dns",
+      "route.rules.1.outbound": "proxy",
+      "route.rules.2.action": "reject"
+    },
+    "idempotent": true,
+    "core_check": true
+  },
+  {
+    "name": "Client policy refuses legacy TUN source overlap",
+    "plugin": "plugin-client-policy",
+    "configuration": {
+      "Enabled": true,
+      "Rules": "[{\"source_ip_cidr\":[\"192.168.8.2/32\"],\"outbound\":\"proxy\"}]"
+    },
+    "input": {
+      "dns": {
+        "servers": [
+          {
+            "type": "local",
+            "tag": "local"
+          },
+          {
+            "type": "udp",
+            "tag": "remote",
+            "server": "192.0.2.53"
+          }
+        ],
+        "final": "local"
+      },
+      "outbounds": [
+        {
+          "type": "direct",
+          "tag": "direct"
+        },
+        {
+          "type": "selector",
+          "tag": "proxy",
+          "outbounds": [
+            "direct"
+          ]
+        }
+      ],
+      "inbounds": [
+        {
+          "type": "mixed",
+          "tag": "lan",
+          "listen": "127.0.0.1",
+          "listen_port": 18080
+        }
+      ],
+      "route": {
+        "default_domain_resolver": "local",
+        "rules": [
+          {
+            "source_ip_cidr": [
+              "192.168.8.0/24"
+            ],
+            "outbound": "direct"
+          }
+        ],
+        "rule_set": [
+          {
+            "type": "inline",
+            "tag": "example",
+            "rules": [
+              {
+                "domain_suffix": [
+                  "example.org"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error": "overlaps"
+  },
+  {
+    "name": "TUN legacy client rules refuse a previously generated client policy",
+    "plugin": "plugin-router-transparent-proxy",
+    "configuration": {
+      "Enabled": true,
+      "LANInterfaces": "[\"br-lan\"]",
+      "Addresses": "[\"172.19.0.1/30\"]",
+      "ClientRules": "[{\"source_ip_cidr\":[\"192.168.8.0/24\"],\"outbound\":\"direct\"}]"
+    },
+    "input": {
+      "dns": {
+        "servers": [
+          {
+            "type": "local",
+            "tag": "local"
+          },
+          {
+            "type": "udp",
+            "tag": "remote",
+            "server": "192.0.2.53"
+          }
+        ],
+        "final": "local"
+      },
+      "outbounds": [
+        {
+          "type": "direct",
+          "tag": "direct"
+        },
+        {
+          "type": "selector",
+          "tag": "proxy",
+          "outbounds": [
+            "direct"
+          ]
+        }
+      ],
+      "inbounds": [],
+      "route": {
+        "default_domain_resolver": "local",
+        "rules": [
+          {
+            "source_ip_cidr": [
+              "192.168.8.2/32"
+            ],
+            "outbound": "proxy",
+            "action": "route"
+          }
+        ],
+        "rule_set": [
+          {
+            "type": "inline",
+            "tag": "example",
+            "rules": [
+              {
+                "domain_suffix": [
+                  "example.org"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error": "overlaps"
+  },
+  {
+    "name": "Organizer filters protocols and remaps exact duplicate references",
+    "plugin": "plugin-subscription-organizer",
+    "trigger": "on::subscribe",
+    "configuration": {
+      "Enabled": true,
+      "FilterEnabled": true,
+      "IncludeTypes": "[\"shadowsocks\"]",
+      "RemoveDuplicates": true
+    },
+    "proxies": [
+      {
+        "type": "shadowsocks",
+        "tag": "HK",
+        "server": "example.test",
+        "server_port": 443,
+        "password": "p",
+        "__id_in_gui": "keep"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "HK copy",
+        "server": "example.test",
+        "server_port": 443,
+        "password": "p",
+        "__id_in_gui": "duplicate"
+      },
+      {
+        "type": "vmess",
+        "tag": "excluded",
+        "server": "example.test",
+        "__id_in_gui": "excluded"
+      },
+      {
+        "type": "selector",
+        "tag": "group",
+        "outbounds": [
+          "HK",
+          "HK copy",
+          "excluded"
+        ],
+        "default": "HK copy",
+        "__id_in_gui": "g"
+      }
+    ],
+    "checks": {
+      "2": null,
+      "0.__id_in_gui": "keep",
+      "1.outbounds.0": "HK",
+      "1.default": "HK"
+    },
+    "idempotent": true
+  },
+  {
+    "name": "Organizer refuses filtering a required detour target",
+    "plugin": "plugin-subscription-organizer",
+    "trigger": "on::subscribe",
+    "configuration": {
+      "Enabled": true,
+      "FilterEnabled": true,
+      "ExcludeName": "remove"
+    },
+    "proxies": [
+      {
+        "type": "direct",
+        "tag": "keep",
+        "detour": "remove"
+      },
+      {
+        "type": "direct",
+        "tag": "remove"
+      }
+    ],
+    "error": "detour"
+  },
+  {
+    "name": "Unified organizer retains full official 142-region support",
+    "plugin": "plugin-subscription-organizer",
+    "trigger": "on::subscribe",
+    "configuration": {
+      "Enabled": true,
+      "RenameMode": "beautify"
+    },
+    "proxies": [
+      {
+        "type": "shadowsocks",
+        "tag": "香港 09",
+        "server": "192.0.2.1",
+        "server_port": 10000,
+        "password": "example",
+        "__id_in_gui": "region-0"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "台湾 09",
+        "server": "192.0.2.1",
+        "server_port": 10001,
+        "password": "example",
+        "__id_in_gui": "region-1"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "澳门 09",
+        "server": "192.0.2.1",
+        "server_port": 10002,
+        "password": "example",
+        "__id_in_gui": "region-2"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "新加坡 09",
+        "server": "192.0.2.1",
+        "server_port": 10003,
+        "password": "example",
+        "__id_in_gui": "region-3"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "日本 09",
+        "server": "192.0.2.1",
+        "server_port": 10004,
+        "password": "example",
+        "__id_in_gui": "region-4"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "美国 09",
+        "server": "192.0.2.1",
+        "server_port": 10005,
+        "password": "example",
+        "__id_in_gui": "region-5"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "瑞士 09",
+        "server": "192.0.2.1",
+        "server_port": 10006,
+        "password": "example",
+        "__id_in_gui": "region-6"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "德国 09",
+        "server": "192.0.2.1",
+        "server_port": 10007,
+        "password": "example",
+        "__id_in_gui": "region-7"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "韩国 09",
+        "server": "192.0.2.1",
+        "server_port": 10008,
+        "password": "example",
+        "__id_in_gui": "region-8"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "朝鲜 09",
+        "server": "192.0.2.1",
+        "server_port": 10009,
+        "password": "example",
+        "__id_in_gui": "region-9"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "俄罗斯 09",
+        "server": "192.0.2.1",
+        "server_port": 10010,
+        "password": "example",
+        "__id_in_gui": "region-10"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "阿根廷 09",
+        "server": "192.0.2.1",
+        "server_port": 10011,
+        "password": "example",
+        "__id_in_gui": "region-11"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "澳大利亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10012,
+        "password": "example",
+        "__id_in_gui": "region-12"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "比利时 09",
+        "server": "192.0.2.1",
+        "server_port": 10013,
+        "password": "example",
+        "__id_in_gui": "region-13"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "巴西 09",
+        "server": "192.0.2.1",
+        "server_port": 10014,
+        "password": "example",
+        "__id_in_gui": "region-14"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "保加利亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10015,
+        "password": "example",
+        "__id_in_gui": "region-15"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "印度 09",
+        "server": "192.0.2.1",
+        "server_port": 10016,
+        "password": "example",
+        "__id_in_gui": "region-16"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "印尼 09",
+        "server": "192.0.2.1",
+        "server_port": 10017,
+        "password": "example",
+        "__id_in_gui": "region-17"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "英国 09",
+        "server": "192.0.2.1",
+        "server_port": 10018,
+        "password": "example",
+        "__id_in_gui": "region-18"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "法国 09",
+        "server": "192.0.2.1",
+        "server_port": 10019,
+        "password": "example",
+        "__id_in_gui": "region-19"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "丹麦 09",
+        "server": "192.0.2.1",
+        "server_port": 10020,
+        "password": "example",
+        "__id_in_gui": "region-20"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "挪威 09",
+        "server": "192.0.2.1",
+        "server_port": 10021,
+        "password": "example",
+        "__id_in_gui": "region-21"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "意大利 09",
+        "server": "192.0.2.1",
+        "server_port": 10022,
+        "password": "example",
+        "__id_in_gui": "region-22"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "梵蒂冈 09",
+        "server": "192.0.2.1",
+        "server_port": 10023,
+        "password": "example",
+        "__id_in_gui": "region-23"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "加拿大 09",
+        "server": "192.0.2.1",
+        "server_port": 10024,
+        "password": "example",
+        "__id_in_gui": "region-24"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "马来西亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10025,
+        "password": "example",
+        "__id_in_gui": "region-25"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "马尔代夫 09",
+        "server": "192.0.2.1",
+        "server_port": 10026,
+        "password": "example",
+        "__id_in_gui": "region-26"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "土耳其 09",
+        "server": "192.0.2.1",
+        "server_port": 10027,
+        "password": "example",
+        "__id_in_gui": "region-27"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "菲律宾 09",
+        "server": "192.0.2.1",
+        "server_port": 10028,
+        "password": "example",
+        "__id_in_gui": "region-28"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "泰国 09",
+        "server": "192.0.2.1",
+        "server_port": 10029,
+        "password": "example",
+        "__id_in_gui": "region-29"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "越南 09",
+        "server": "192.0.2.1",
+        "server_port": 10030,
+        "password": "example",
+        "__id_in_gui": "region-30"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "柬埔寨 09",
+        "server": "192.0.2.1",
+        "server_port": 10031,
+        "password": "example",
+        "__id_in_gui": "region-31"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "老挝 09",
+        "server": "192.0.2.1",
+        "server_port": 10032,
+        "password": "example",
+        "__id_in_gui": "region-32"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "孟加拉 09",
+        "server": "192.0.2.1",
+        "server_port": 10033,
+        "password": "example",
+        "__id_in_gui": "region-33"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "缅甸 09",
+        "server": "192.0.2.1",
+        "server_port": 10034,
+        "password": "example",
+        "__id_in_gui": "region-34"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "黎巴嫩 09",
+        "server": "192.0.2.1",
+        "server_port": 10035,
+        "password": "example",
+        "__id_in_gui": "region-35"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "乌克兰 09",
+        "server": "192.0.2.1",
+        "server_port": 10036,
+        "password": "example",
+        "__id_in_gui": "region-36"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "匈牙利 09",
+        "server": "192.0.2.1",
+        "server_port": 10037,
+        "password": "example",
+        "__id_in_gui": "region-37"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "瑞典 09",
+        "server": "192.0.2.1",
+        "server_port": 10038,
+        "password": "example",
+        "__id_in_gui": "region-38"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "卢森堡 09",
+        "server": "192.0.2.1",
+        "server_port": 10039,
+        "password": "example",
+        "__id_in_gui": "region-39"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "奥地利 09",
+        "server": "192.0.2.1",
+        "server_port": 10040,
+        "password": "example",
+        "__id_in_gui": "region-40"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "捷克 09",
+        "server": "192.0.2.1",
+        "server_port": 10041,
+        "password": "example",
+        "__id_in_gui": "region-41"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "希腊 09",
+        "server": "192.0.2.1",
+        "server_port": 10042,
+        "password": "example",
+        "__id_in_gui": "region-42"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "冰岛 09",
+        "server": "192.0.2.1",
+        "server_port": 10043,
+        "password": "example",
+        "__id_in_gui": "region-43"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "新西兰 09",
+        "server": "192.0.2.1",
+        "server_port": 10044,
+        "password": "example",
+        "__id_in_gui": "region-44"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "爱尔兰 09",
+        "server": "192.0.2.1",
+        "server_port": 10045,
+        "password": "example",
+        "__id_in_gui": "region-45"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "马恩岛 09",
+        "server": "192.0.2.1",
+        "server_port": 10046,
+        "password": "example",
+        "__id_in_gui": "region-46"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "立陶宛 09",
+        "server": "192.0.2.1",
+        "server_port": 10047,
+        "password": "example",
+        "__id_in_gui": "region-47"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "芬兰 09",
+        "server": "192.0.2.1",
+        "server_port": 10048,
+        "password": "example",
+        "__id_in_gui": "region-48"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "乌拉圭 09",
+        "server": "192.0.2.1",
+        "server_port": 10049,
+        "password": "example",
+        "__id_in_gui": "region-49"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "巴拉圭 09",
+        "server": "192.0.2.1",
+        "server_port": 10050,
+        "password": "example",
+        "__id_in_gui": "region-50"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "牙买加 09",
+        "server": "192.0.2.1",
+        "server_port": 10051,
+        "password": "example",
+        "__id_in_gui": "region-51"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "苏里南 09",
+        "server": "192.0.2.1",
+        "server_port": 10052,
+        "password": "example",
+        "__id_in_gui": "region-52"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "库拉索 09",
+        "server": "192.0.2.1",
+        "server_port": 10053,
+        "password": "example",
+        "__id_in_gui": "region-53"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "哥伦比亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10054,
+        "password": "example",
+        "__id_in_gui": "region-54"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "厄瓜多尔 09",
+        "server": "192.0.2.1",
+        "server_port": 10055,
+        "password": "example",
+        "__id_in_gui": "region-55"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "西班牙 09",
+        "server": "192.0.2.1",
+        "server_port": 10056,
+        "password": "example",
+        "__id_in_gui": "region-56"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "葡萄牙 09",
+        "server": "192.0.2.1",
+        "server_port": 10057,
+        "password": "example",
+        "__id_in_gui": "region-57"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "以色列 09",
+        "server": "192.0.2.1",
+        "server_port": 10058,
+        "password": "example",
+        "__id_in_gui": "region-58"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "沙特 09",
+        "server": "192.0.2.1",
+        "server_port": 10059,
+        "password": "example",
+        "__id_in_gui": "region-59"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "蒙古 09",
+        "server": "192.0.2.1",
+        "server_port": 10060,
+        "password": "example",
+        "__id_in_gui": "region-60"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "阿联酋 09",
+        "server": "192.0.2.1",
+        "server_port": 10061,
+        "password": "example",
+        "__id_in_gui": "region-61"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "阿塞拜疆 09",
+        "server": "192.0.2.1",
+        "server_port": 10062,
+        "password": "example",
+        "__id_in_gui": "region-62"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "亚美尼亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10063,
+        "password": "example",
+        "__id_in_gui": "region-63"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "哈萨克斯坦 09",
+        "server": "192.0.2.1",
+        "server_port": 10064,
+        "password": "example",
+        "__id_in_gui": "region-64"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "吉尔吉斯坦 09",
+        "server": "192.0.2.1",
+        "server_port": 10065,
+        "password": "example",
+        "__id_in_gui": "region-65"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "乌兹别克斯坦 09",
+        "server": "192.0.2.1",
+        "server_port": 10066,
+        "password": "example",
+        "__id_in_gui": "region-66"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "智利 09",
+        "server": "192.0.2.1",
+        "server_port": 10067,
+        "password": "example",
+        "__id_in_gui": "region-67"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "秘鲁 09",
+        "server": "192.0.2.1",
+        "server_port": 10068,
+        "password": "example",
+        "__id_in_gui": "region-68"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "古巴 09",
+        "server": "192.0.2.1",
+        "server_port": 10069,
+        "password": "example",
+        "__id_in_gui": "region-69"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "不丹 09",
+        "server": "192.0.2.1",
+        "server_port": 10070,
+        "password": "example",
+        "__id_in_gui": "region-70"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "安道尔 09",
+        "server": "192.0.2.1",
+        "server_port": 10071,
+        "password": "example",
+        "__id_in_gui": "region-71"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "马耳他 09",
+        "server": "192.0.2.1",
+        "server_port": 10072,
+        "password": "example",
+        "__id_in_gui": "region-72"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "摩纳哥 09",
+        "server": "192.0.2.1",
+        "server_port": 10073,
+        "password": "example",
+        "__id_in_gui": "region-73"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "罗马尼亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10074,
+        "password": "example",
+        "__id_in_gui": "region-74"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "克罗地亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10075,
+        "password": "example",
+        "__id_in_gui": "region-75"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "北马其顿 09",
+        "server": "192.0.2.1",
+        "server_port": 10076,
+        "password": "example",
+        "__id_in_gui": "region-76"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "塞尔维亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10077,
+        "password": "example",
+        "__id_in_gui": "region-77"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "塞浦路斯 09",
+        "server": "192.0.2.1",
+        "server_port": 10078,
+        "password": "example",
+        "__id_in_gui": "region-78"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "拉脱维亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10079,
+        "password": "example",
+        "__id_in_gui": "region-79"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "摩尔多瓦 09",
+        "server": "192.0.2.1",
+        "server_port": 10080,
+        "password": "example",
+        "__id_in_gui": "region-80"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "斯洛伐克 09",
+        "server": "192.0.2.1",
+        "server_port": 10081,
+        "password": "example",
+        "__id_in_gui": "region-81"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "爱沙尼亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10082,
+        "password": "example",
+        "__id_in_gui": "region-82"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "白俄罗斯 09",
+        "server": "192.0.2.1",
+        "server_port": 10083,
+        "password": "example",
+        "__id_in_gui": "region-83"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "文莱 09",
+        "server": "192.0.2.1",
+        "server_port": 10084,
+        "password": "example",
+        "__id_in_gui": "region-84"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "关岛 09",
+        "server": "192.0.2.1",
+        "server_port": 10085,
+        "password": "example",
+        "__id_in_gui": "region-85"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "斐济 09",
+        "server": "192.0.2.1",
+        "server_port": 10086,
+        "password": "example",
+        "__id_in_gui": "region-86"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "约旦 09",
+        "server": "192.0.2.1",
+        "server_port": 10087,
+        "password": "example",
+        "__id_in_gui": "region-87"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "格鲁吉亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10088,
+        "password": "example",
+        "__id_in_gui": "region-88"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "直布罗陀 09",
+        "server": "192.0.2.1",
+        "server_port": 10089,
+        "password": "example",
+        "__id_in_gui": "region-89"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "圣马力诺 09",
+        "server": "192.0.2.1",
+        "server_port": 10090,
+        "password": "example",
+        "__id_in_gui": "region-90"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "尼泊尔 09",
+        "server": "192.0.2.1",
+        "server_port": 10091,
+        "password": "example",
+        "__id_in_gui": "region-91"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "法罗群岛 09",
+        "server": "192.0.2.1",
+        "server_port": 10092,
+        "password": "example",
+        "__id_in_gui": "region-92"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "奥兰群岛 09",
+        "server": "192.0.2.1",
+        "server_port": 10093,
+        "password": "example",
+        "__id_in_gui": "region-93"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "斯洛文尼亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10094,
+        "password": "example",
+        "__id_in_gui": "region-94"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "阿尔巴尼亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10095,
+        "password": "example",
+        "__id_in_gui": "region-95"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "东帝汶 09",
+        "server": "192.0.2.1",
+        "server_port": 10096,
+        "password": "example",
+        "__id_in_gui": "region-96"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "巴拿马 09",
+        "server": "192.0.2.1",
+        "server_port": 10097,
+        "password": "example",
+        "__id_in_gui": "region-97"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "百慕大 09",
+        "server": "192.0.2.1",
+        "server_port": 10098,
+        "password": "example",
+        "__id_in_gui": "region-98"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "格陵兰 09",
+        "server": "192.0.2.1",
+        "server_port": 10099,
+        "password": "example",
+        "__id_in_gui": "region-99"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "哥斯达黎加 09",
+        "server": "192.0.2.1",
+        "server_port": 10100,
+        "password": "example",
+        "__id_in_gui": "region-100"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "英属维尔 09",
+        "server": "192.0.2.1",
+        "server_port": 10101,
+        "password": "example",
+        "__id_in_gui": "region-101"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "美属维尔京 09",
+        "server": "192.0.2.1",
+        "server_port": 10102,
+        "password": "example",
+        "__id_in_gui": "region-102"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "墨西哥 09",
+        "server": "192.0.2.1",
+        "server_port": 10103,
+        "password": "example",
+        "__id_in_gui": "region-103"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "黑山 09",
+        "server": "192.0.2.1",
+        "server_port": 10104,
+        "password": "example",
+        "__id_in_gui": "region-104"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "荷兰 09",
+        "server": "192.0.2.1",
+        "server_port": 10105,
+        "password": "example",
+        "__id_in_gui": "region-105"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "波兰 09",
+        "server": "192.0.2.1",
+        "server_port": 10106,
+        "password": "example",
+        "__id_in_gui": "region-106"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "阿尔及利亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10107,
+        "password": "example",
+        "__id_in_gui": "region-107"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "波黑共和国 09",
+        "server": "192.0.2.1",
+        "server_port": 10108,
+        "password": "example",
+        "__id_in_gui": "region-108"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "列支敦士登 09",
+        "server": "192.0.2.1",
+        "server_port": 10109,
+        "password": "example",
+        "__id_in_gui": "region-109"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "留尼汪 09",
+        "server": "192.0.2.1",
+        "server_port": 10110,
+        "password": "example",
+        "__id_in_gui": "region-110"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "南非 09",
+        "server": "192.0.2.1",
+        "server_port": 10111,
+        "password": "example",
+        "__id_in_gui": "region-111"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "埃及 09",
+        "server": "192.0.2.1",
+        "server_port": 10112,
+        "password": "example",
+        "__id_in_gui": "region-112"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "加纳 09",
+        "server": "192.0.2.1",
+        "server_port": 10113,
+        "password": "example",
+        "__id_in_gui": "region-113"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "马里 09",
+        "server": "192.0.2.1",
+        "server_port": 10114,
+        "password": "example",
+        "__id_in_gui": "region-114"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "摩洛哥 09",
+        "server": "192.0.2.1",
+        "server_port": 10115,
+        "password": "example",
+        "__id_in_gui": "region-115"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "突尼斯 09",
+        "server": "192.0.2.1",
+        "server_port": 10116,
+        "password": "example",
+        "__id_in_gui": "region-116"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "利比亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10117,
+        "password": "example",
+        "__id_in_gui": "region-117"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "肯尼亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10118,
+        "password": "example",
+        "__id_in_gui": "region-118"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "卢旺达 09",
+        "server": "192.0.2.1",
+        "server_port": 10119,
+        "password": "example",
+        "__id_in_gui": "region-119"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "佛得角 09",
+        "server": "192.0.2.1",
+        "server_port": 10120,
+        "password": "example",
+        "__id_in_gui": "region-120"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "安哥拉 09",
+        "server": "192.0.2.1",
+        "server_port": 10121,
+        "password": "example",
+        "__id_in_gui": "region-121"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "尼日利亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10122,
+        "password": "example",
+        "__id_in_gui": "region-122"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "毛里求斯 09",
+        "server": "192.0.2.1",
+        "server_port": 10123,
+        "password": "example",
+        "__id_in_gui": "region-123"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "阿曼 09",
+        "server": "192.0.2.1",
+        "server_port": 10124,
+        "password": "example",
+        "__id_in_gui": "region-124"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "巴林 09",
+        "server": "192.0.2.1",
+        "server_port": 10125,
+        "password": "example",
+        "__id_in_gui": "region-125"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "伊拉克 09",
+        "server": "192.0.2.1",
+        "server_port": 10126,
+        "password": "example",
+        "__id_in_gui": "region-126"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "伊朗 09",
+        "server": "192.0.2.1",
+        "server_port": 10127,
+        "password": "example",
+        "__id_in_gui": "region-127"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "阿富汗 09",
+        "server": "192.0.2.1",
+        "server_port": 10128,
+        "password": "example",
+        "__id_in_gui": "region-128"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "巴基斯坦 09",
+        "server": "192.0.2.1",
+        "server_port": 10129,
+        "password": "example",
+        "__id_in_gui": "region-129"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "卡塔尔 09",
+        "server": "192.0.2.1",
+        "server_port": 10130,
+        "password": "example",
+        "__id_in_gui": "region-130"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "叙利亚 09",
+        "server": "192.0.2.1",
+        "server_port": 10131,
+        "password": "example",
+        "__id_in_gui": "region-131"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "斯里兰卡 09",
+        "server": "192.0.2.1",
+        "server_port": 10132,
+        "password": "example",
+        "__id_in_gui": "region-132"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "委内瑞拉 09",
+        "server": "192.0.2.1",
+        "server_port": 10133,
+        "password": "example",
+        "__id_in_gui": "region-133"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "危地马拉 09",
+        "server": "192.0.2.1",
+        "server_port": 10134,
+        "password": "example",
+        "__id_in_gui": "region-134"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "波多黎各 09",
+        "server": "192.0.2.1",
+        "server_port": 10135,
+        "password": "example",
+        "__id_in_gui": "region-135"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "开曼群岛 09",
+        "server": "192.0.2.1",
+        "server_port": 10136,
+        "password": "example",
+        "__id_in_gui": "region-136"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "斯瓦尔巴 09",
+        "server": "192.0.2.1",
+        "server_port": 10137,
+        "password": "example",
+        "__id_in_gui": "region-137"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "洪都拉斯 09",
+        "server": "192.0.2.1",
+        "server_port": 10138,
+        "password": "example",
+        "__id_in_gui": "region-138"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "尼加拉瓜 09",
+        "server": "192.0.2.1",
+        "server_port": 10139,
+        "password": "example",
+        "__id_in_gui": "region-139"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "南极 09",
+        "server": "192.0.2.1",
+        "server_port": 10140,
+        "password": "example",
+        "__id_in_gui": "region-140"
+      },
+      {
+        "type": "shadowsocks",
+        "tag": "中国 09",
+        "server": "192.0.2.1",
+        "server_port": 10141,
+        "password": "example",
+        "__id_in_gui": "region-141"
+      }
+    ],
+    "subscription": {},
+    "checks": {
+      "0.tag": "🇭🇰 香港 01",
+      "0.__id_in_gui": "region-0",
+      "1.tag": "🇹🇼 台湾 01",
+      "1.__id_in_gui": "region-1",
+      "2.tag": "🇲🇴 澳门 01",
+      "2.__id_in_gui": "region-2",
+      "3.tag": "🇸🇬 新加坡 01",
+      "3.__id_in_gui": "region-3",
+      "4.tag": "🇯🇵 日本 01",
+      "4.__id_in_gui": "region-4",
+      "5.tag": "🇺🇸 美国 01",
+      "5.__id_in_gui": "region-5",
+      "6.tag": "🇨🇭 瑞士 01",
+      "6.__id_in_gui": "region-6",
+      "7.tag": "🇩🇪 德国 01",
+      "7.__id_in_gui": "region-7",
+      "8.tag": "🇰🇷 韩国 01",
+      "8.__id_in_gui": "region-8",
+      "9.tag": "🇰🇵 朝鲜 01",
+      "9.__id_in_gui": "region-9",
+      "10.tag": "🇷🇺 俄罗斯 01",
+      "10.__id_in_gui": "region-10",
+      "11.tag": "🇦🇷 阿根廷 01",
+      "11.__id_in_gui": "region-11",
+      "12.tag": "🇦🇺 澳大利亚 01",
+      "12.__id_in_gui": "region-12",
+      "13.tag": "🇧🇪 比利时 01",
+      "13.__id_in_gui": "region-13",
+      "14.tag": "🇧🇷 巴西 01",
+      "14.__id_in_gui": "region-14",
+      "15.tag": "🇧🇬 保加利亚 01",
+      "15.__id_in_gui": "region-15",
+      "16.tag": "🇮🇳 印度 01",
+      "16.__id_in_gui": "region-16",
+      "17.tag": "🇮🇩 印尼 01",
+      "17.__id_in_gui": "region-17",
+      "18.tag": "🇬🇧 英国 01",
+      "18.__id_in_gui": "region-18",
+      "19.tag": "🇫🇷 法国 01",
+      "19.__id_in_gui": "region-19",
+      "20.tag": "🇩🇰 丹麦 01",
+      "20.__id_in_gui": "region-20",
+      "21.tag": "🇳🇴 挪威 01",
+      "21.__id_in_gui": "region-21",
+      "22.tag": "🇮🇹 意大利 01",
+      "22.__id_in_gui": "region-22",
+      "23.tag": "🇻🇦 梵蒂冈 01",
+      "23.__id_in_gui": "region-23",
+      "24.tag": "🇨🇦 加拿大 01",
+      "24.__id_in_gui": "region-24",
+      "25.tag": "🇲🇾 马来西亚 01",
+      "25.__id_in_gui": "region-25",
+      "26.tag": "🇲🇻 马尔代夫 01",
+      "26.__id_in_gui": "region-26",
+      "27.tag": "🇹🇷 土耳其 01",
+      "27.__id_in_gui": "region-27",
+      "28.tag": "🇵🇭 菲律宾 01",
+      "28.__id_in_gui": "region-28",
+      "29.tag": "🇹🇭 泰国 01",
+      "29.__id_in_gui": "region-29",
+      "30.tag": "🇻🇳 越南 01",
+      "30.__id_in_gui": "region-30",
+      "31.tag": "🇰🇭 柬埔寨 01",
+      "31.__id_in_gui": "region-31",
+      "32.tag": "🇱🇦 老挝 01",
+      "32.__id_in_gui": "region-32",
+      "33.tag": "🇧🇩 孟加拉 01",
+      "33.__id_in_gui": "region-33",
+      "34.tag": "🇲🇲 缅甸 01",
+      "34.__id_in_gui": "region-34",
+      "35.tag": "🇱🇧 黎巴嫩 01",
+      "35.__id_in_gui": "region-35",
+      "36.tag": "🇺🇦 乌克兰 01",
+      "36.__id_in_gui": "region-36",
+      "37.tag": "🇭🇺 匈牙利 01",
+      "37.__id_in_gui": "region-37",
+      "38.tag": "🇸🇪 瑞典 01",
+      "38.__id_in_gui": "region-38",
+      "39.tag": "🇱🇺 卢森堡 01",
+      "39.__id_in_gui": "region-39",
+      "40.tag": "🇦🇹 奥地利 01",
+      "40.__id_in_gui": "region-40",
+      "41.tag": "🇨🇿 捷克 01",
+      "41.__id_in_gui": "region-41",
+      "42.tag": "🇬🇷 希腊 01",
+      "42.__id_in_gui": "region-42",
+      "43.tag": "🇮🇸 冰岛 01",
+      "43.__id_in_gui": "region-43",
+      "44.tag": "🇳🇿 新西兰 01",
+      "44.__id_in_gui": "region-44",
+      "45.tag": "🇮🇪 爱尔兰 01",
+      "45.__id_in_gui": "region-45",
+      "46.tag": "🇮🇲 马恩岛 01",
+      "46.__id_in_gui": "region-46",
+      "47.tag": "🇱🇹 立陶宛 01",
+      "47.__id_in_gui": "region-47",
+      "48.tag": "🇫🇮 芬兰 01",
+      "48.__id_in_gui": "region-48",
+      "49.tag": "🇺🇾 乌拉圭 01",
+      "49.__id_in_gui": "region-49",
+      "50.tag": "🇵🇾 巴拉圭 01",
+      "50.__id_in_gui": "region-50",
+      "51.tag": "🇯🇲 牙买加 01",
+      "51.__id_in_gui": "region-51",
+      "52.tag": "🇸🇷 苏里南 01",
+      "52.__id_in_gui": "region-52",
+      "53.tag": "🇨🇼 库拉索 01",
+      "53.__id_in_gui": "region-53",
+      "54.tag": "🇨🇴 哥伦比亚 01",
+      "54.__id_in_gui": "region-54",
+      "55.tag": "🇪🇨 厄瓜多尔 01",
+      "55.__id_in_gui": "region-55",
+      "56.tag": "🇪🇸 西班牙 01",
+      "56.__id_in_gui": "region-56",
+      "57.tag": "🇵🇹 葡萄牙 01",
+      "57.__id_in_gui": "region-57",
+      "58.tag": "🇮🇱 以色列 01",
+      "58.__id_in_gui": "region-58",
+      "59.tag": "🇸🇦 沙特 01",
+      "59.__id_in_gui": "region-59",
+      "60.tag": "🇲🇳 蒙古 01",
+      "60.__id_in_gui": "region-60",
+      "61.tag": "🇦🇪 阿联酋 01",
+      "61.__id_in_gui": "region-61",
+      "62.tag": "🇦🇿 阿塞拜疆 01",
+      "62.__id_in_gui": "region-62",
+      "63.tag": "🇦🇲 亚美尼亚 01",
+      "63.__id_in_gui": "region-63",
+      "64.tag": "🇰🇿 哈萨克斯坦 01",
+      "64.__id_in_gui": "region-64",
+      "65.tag": "🇰🇬 吉尔吉斯坦 01",
+      "65.__id_in_gui": "region-65",
+      "66.tag": "🇺🇿 乌兹别克斯坦 01",
+      "66.__id_in_gui": "region-66",
+      "67.tag": "🇨🇱 智利 01",
+      "67.__id_in_gui": "region-67",
+      "68.tag": "🇵🇪 秘鲁 01",
+      "68.__id_in_gui": "region-68",
+      "69.tag": "🇨🇺 古巴 01",
+      "69.__id_in_gui": "region-69",
+      "70.tag": "🇧🇹 不丹 01",
+      "70.__id_in_gui": "region-70",
+      "71.tag": "🇦🇩 安道尔 01",
+      "71.__id_in_gui": "region-71",
+      "72.tag": "🇲🇹 马耳他 01",
+      "72.__id_in_gui": "region-72",
+      "73.tag": "🇲🇨 摩纳哥 01",
+      "73.__id_in_gui": "region-73",
+      "74.tag": "🇷🇴 罗马尼亚 01",
+      "74.__id_in_gui": "region-74",
+      "75.tag": "🇭🇷 克罗地亚 01",
+      "75.__id_in_gui": "region-75",
+      "76.tag": "🇲🇰 北马其顿 01",
+      "76.__id_in_gui": "region-76",
+      "77.tag": "🇷🇸 塞尔维亚 01",
+      "77.__id_in_gui": "region-77",
+      "78.tag": "🇨🇾 塞浦路斯 01",
+      "78.__id_in_gui": "region-78",
+      "79.tag": "🇱🇻 拉脱维亚 01",
+      "79.__id_in_gui": "region-79",
+      "80.tag": "🇲🇩 摩尔多瓦 01",
+      "80.__id_in_gui": "region-80",
+      "81.tag": "🇸🇰 斯洛伐克 01",
+      "81.__id_in_gui": "region-81",
+      "82.tag": "🇪🇪 爱沙尼亚 01",
+      "82.__id_in_gui": "region-82",
+      "83.tag": "🇧🇾 白俄罗斯 01",
+      "83.__id_in_gui": "region-83",
+      "84.tag": "🇧🇳 文莱 01",
+      "84.__id_in_gui": "region-84",
+      "85.tag": "🇬🇺 关岛 01",
+      "85.__id_in_gui": "region-85",
+      "86.tag": "🇫🇯 斐济 01",
+      "86.__id_in_gui": "region-86",
+      "87.tag": "🇯🇴 约旦 01",
+      "87.__id_in_gui": "region-87",
+      "88.tag": "🇬🇪 格鲁吉亚 01",
+      "88.__id_in_gui": "region-88",
+      "89.tag": "🇬🇮 直布罗陀 01",
+      "89.__id_in_gui": "region-89",
+      "90.tag": "🇸🇲 圣马力诺 01",
+      "90.__id_in_gui": "region-90",
+      "91.tag": "🇳🇵 尼泊尔 01",
+      "91.__id_in_gui": "region-91",
+      "92.tag": "🇫🇴 法罗群岛 01",
+      "92.__id_in_gui": "region-92",
+      "93.tag": "🇦🇽 奥兰群岛 01",
+      "93.__id_in_gui": "region-93",
+      "94.tag": "🇸🇮 斯洛文尼亚 01",
+      "94.__id_in_gui": "region-94",
+      "95.tag": "🇦🇱 阿尔巴尼亚 01",
+      "95.__id_in_gui": "region-95",
+      "96.tag": "🇹🇱 东帝汶 01",
+      "96.__id_in_gui": "region-96",
+      "97.tag": "🇵🇦 巴拿马 01",
+      "97.__id_in_gui": "region-97",
+      "98.tag": "🇧🇲 百慕大 01",
+      "98.__id_in_gui": "region-98",
+      "99.tag": "🇬🇱 格陵兰 01",
+      "99.__id_in_gui": "region-99",
+      "100.tag": "🇨🇷 哥斯达黎加 01",
+      "100.__id_in_gui": "region-100",
+      "101.tag": "🇻🇬 英属维尔 01",
+      "101.__id_in_gui": "region-101",
+      "102.tag": "🇻🇮 美属维尔京 01",
+      "102.__id_in_gui": "region-102",
+      "103.tag": "🇲🇽 墨西哥 01",
+      "103.__id_in_gui": "region-103",
+      "104.tag": "🇲🇪 黑山 01",
+      "104.__id_in_gui": "region-104",
+      "105.tag": "🇳🇱 荷兰 01",
+      "105.__id_in_gui": "region-105",
+      "106.tag": "🇵🇱 波兰 01",
+      "106.__id_in_gui": "region-106",
+      "107.tag": "🇩🇿 阿尔及利亚 01",
+      "107.__id_in_gui": "region-107",
+      "108.tag": "🇧🇦 波黑共和国 01",
+      "108.__id_in_gui": "region-108",
+      "109.tag": "🇱🇮 列支敦士登 01",
+      "109.__id_in_gui": "region-109",
+      "110.tag": "🇷🇪 留尼汪 01",
+      "110.__id_in_gui": "region-110",
+      "111.tag": "🇿🇦 南非 01",
+      "111.__id_in_gui": "region-111",
+      "112.tag": "🇪🇬 埃及 01",
+      "112.__id_in_gui": "region-112",
+      "113.tag": "🇬🇭 加纳 01",
+      "113.__id_in_gui": "region-113",
+      "114.tag": "🇲🇱 马里 01",
+      "114.__id_in_gui": "region-114",
+      "115.tag": "🇲🇦 摩洛哥 01",
+      "115.__id_in_gui": "region-115",
+      "116.tag": "🇹🇳 突尼斯 01",
+      "116.__id_in_gui": "region-116",
+      "117.tag": "🇱🇾 利比亚 01",
+      "117.__id_in_gui": "region-117",
+      "118.tag": "🇰🇪 肯尼亚 01",
+      "118.__id_in_gui": "region-118",
+      "119.tag": "🇷🇼 卢旺达 01",
+      "119.__id_in_gui": "region-119",
+      "120.tag": "🇨🇻 佛得角 01",
+      "120.__id_in_gui": "region-120",
+      "121.tag": "🇦🇴 安哥拉 01",
+      "121.__id_in_gui": "region-121",
+      "122.tag": "🇳🇬 尼日利亚 01",
+      "122.__id_in_gui": "region-122",
+      "123.tag": "🇲🇺 毛里求斯 01",
+      "123.__id_in_gui": "region-123",
+      "124.tag": "🇴🇲 阿曼 01",
+      "124.__id_in_gui": "region-124",
+      "125.tag": "🇧🇭 巴林 01",
+      "125.__id_in_gui": "region-125",
+      "126.tag": "🇮🇶 伊拉克 01",
+      "126.__id_in_gui": "region-126",
+      "127.tag": "🇮🇷 伊朗 01",
+      "127.__id_in_gui": "region-127",
+      "128.tag": "🇦🇫 阿富汗 01",
+      "128.__id_in_gui": "region-128",
+      "129.tag": "🇵🇰 巴基斯坦 01",
+      "129.__id_in_gui": "region-129",
+      "130.tag": "🇶🇦 卡塔尔 01",
+      "130.__id_in_gui": "region-130",
+      "131.tag": "🇸🇾 叙利亚 01",
+      "131.__id_in_gui": "region-131",
+      "132.tag": "🇱🇰 斯里兰卡 01",
+      "132.__id_in_gui": "region-132",
+      "133.tag": "🇻🇪 委内瑞拉 01",
+      "133.__id_in_gui": "region-133",
+      "134.tag": "🇬🇹 危地马拉 01",
+      "134.__id_in_gui": "region-134",
+      "135.tag": "🇵🇷 波多黎各 01",
+      "135.__id_in_gui": "region-135",
+      "136.tag": "🇰🇾 开曼群岛 01",
+      "136.__id_in_gui": "region-136",
+      "137.tag": "🇸🇯 斯瓦尔巴 01",
+      "137.__id_in_gui": "region-137",
+      "138.tag": "🇭🇳 洪都拉斯 01",
+      "138.__id_in_gui": "region-138",
+      "139.tag": "🇳🇮 尼加拉瓜 01",
+      "139.__id_in_gui": "region-139",
+      "140.tag": "🇦🇶 南极 01",
+      "140.__id_in_gui": "region-140",
+      "141.tag": "🇨🇳 中国 01",
+      "141.__id_in_gui": "region-141"
+    },
+    "idempotent": true
+  },
+  {
+    "name": "Client policy refuses inverted existing source matches",
+    "plugin": "plugin-client-policy",
+    "configuration": {
+      "Enabled": true,
+      "Rules": "[{\"source_ip_cidr\":[\"192.168.9.42/32\"],\"outbound\":\"proxy\"}]"
+    },
+    "input": {
+      "dns": {
+        "servers": [
+          {
+            "type": "local",
+            "tag": "local"
+          },
+          {
+            "type": "udp",
+            "tag": "remote",
+            "server": "192.0.2.53"
+          }
+        ],
+        "final": "local"
+      },
+      "outbounds": [
+        {
+          "type": "direct",
+          "tag": "direct"
+        },
+        {
+          "type": "selector",
+          "tag": "proxy",
+          "outbounds": [
+            "direct"
+          ]
+        }
+      ],
+      "inbounds": [
+        {
+          "type": "mixed",
+          "tag": "lan",
+          "listen": "127.0.0.1",
+          "listen_port": 18080
+        }
+      ],
+      "route": {
+        "default_domain_resolver": "local",
+        "rules": [
+          {
+            "type": "logical",
+            "mode": "and",
+            "invert": true,
+            "rules": [
+              {
+                "source_ip_cidr": [
+                  "192.168.8.0/24"
+                ]
+              }
+            ],
+            "action": "route",
+            "outbound": "direct"
+          }
+        ],
+        "rule_set": [
+          {
+            "type": "inline",
+            "tag": "example",
+            "rules": [
+              {
+                "domain_suffix": [
+                  "example.org"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error": "inverted source"
+  },
+  {
+    "name": "TUN default outbound refuses shadowing a previously generated source policy",
+    "plugin": "plugin-router-transparent-proxy",
+    "configuration": {
+      "Enabled": true,
+      "LANInterfaces": "[\"br-lan\"]",
+      "DefaultOutbound": "proxy"
+    },
+    "input": {
+      "dns": {
+        "servers": [
+          {
+            "type": "local",
+            "tag": "local"
+          },
+          {
+            "type": "udp",
+            "tag": "remote",
+            "server": "192.0.2.53"
+          }
+        ],
+        "final": "local"
+      },
+      "outbounds": [
+        {
+          "type": "direct",
+          "tag": "direct"
+        },
+        {
+          "type": "selector",
+          "tag": "proxy",
+          "outbounds": [
+            "direct"
+          ]
+        }
+      ],
+      "inbounds": [],
+      "route": {
+        "default_domain_resolver": "local",
+        "rules": [
+          {
+            "source_ip_cidr": [
+              "192.168.8.2/32"
+            ],
+            "action": "route",
+            "outbound": "direct"
+          }
+        ],
+        "rule_set": [
+          {
+            "type": "inline",
+            "tag": "example",
+            "rules": [
+              {
+                "domain_suffix": [
+                  "example.org"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error": "would shadow"
+  },
+  {
+    "name": "Client policy refuses terminal routing interleaved before DNS preprocessing",
+    "plugin": "plugin-client-policy",
+    "configuration": {
+      "Enabled": true,
+      "Rules": "[{\"source_ip_cidr\":[\"192.168.8.42/32\"],\"outbound\":\"direct\"}]"
+    },
+    "input": {
+      "dns": {
+        "servers": [
+          {
+            "type": "local",
+            "tag": "local"
+          },
+          {
+            "type": "udp",
+            "tag": "remote",
+            "server": "192.0.2.53"
+          }
+        ],
+        "final": "local"
+      },
+      "outbounds": [
+        {
+          "type": "direct",
+          "tag": "direct"
+        },
+        {
+          "type": "selector",
+          "tag": "proxy",
+          "outbounds": [
+            "direct"
+          ]
+        }
+      ],
+      "inbounds": [
+        {
+          "type": "mixed",
+          "tag": "lan",
+          "listen": "127.0.0.1",
+          "listen_port": 18080
+        }
+      ],
+      "route": {
+        "default_domain_resolver": "local",
+        "rules": [
+          {
+            "action": "route",
+            "outbound": "proxy"
+          },
+          {
+            "action": "hijack-dns",
+            "port": [
+              53
+            ]
+          }
+        ],
+        "rule_set": [
+          {
+            "type": "inline",
+            "tag": "example",
+            "rules": [
+              {
+                "domain_suffix": [
+                  "example.org"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "error": "terminal routing before DNS"
   }
 ]

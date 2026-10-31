@@ -2,28 +2,26 @@
 
 为 [Ghostdehole/WEBUI.for.SingBox](https://github.com/Ghostdehole/WEBUI.for.SingBox) 独立维护的 JavaScript 插件仓库，面向路由器、网关和透明代理。**本仓库是插件中心唯一发行来源**，清单与源码只在此维护；主程序提供下载、管理和执行接口，不复制或打包插件发行源码。插件在顶部「插件」页面管理，由 Go 后端执行，订阅定时更新不依赖浏览器保持打开。
 
-**请先升级主程序至 WEBUI.for.SingBox 1.3.1 或更新版本，再从本仓库获取插件。** 本轮参数与诊断接口在 1.3.0 引入，1.3.1 取消主程序随附插件，统一使用独立仓库。配置生成以 sing-box 1.14.x 为基线；插件版本独立，不表示主程序或 Release 版本。
+**请先升级主程序至 WEBUI.for.SingBox 1.4.0 或更新版本，再从本仓库获取插件。** 1.4.0 支持兼容条目及替代关系元数据；1.3.1 已取消主程序随附插件。配置生成以 sing-box 1.14.x 为基线；插件版本独立，不表示主程序或 Release 版本。
 
-已审阅官方 [Plugin-Hub](https://github.com/GUI-for-Cores/Plugin-Hub) 的全部 **100 个插件入口**，本轮提供 **16 个插件**，包含合并和部分能力替代，**并非全功能复刻**。逐项取舍见 [中文审计](docs/upstream-review.md)，固定提交和逐文件 SHA256 见 [审计 JSON](upstream/audit.json)。官方桌面 JS 不能直接导入运行。
+已审阅并重新核对官方 [Plugin-Hub](https://github.com/GUI-for-Cores/Plugin-Hub) 的全部 **100 个插件入口**。当前目录按用途提供 **14 个插件**，另保留 **6 个旧 ID 兼容条目**；包含合并和部分能力替代，**并非全功能复刻**。逐项取舍见 [中文审计](docs/upstream-review.md)，固定提交和逐文件 SHA256 见 [审计 JSON](upstream/audit.json)。官方桌面 JS 不能直接导入运行。
 
 ## 插件列表
 
 | 插件 | 触发方式 | 本轮能力与边界 |
 | --- | --- | --- |
-| [防代理重名](plugins/plugin-index-the-proxy-name.js) | 订阅更新 | 稳定索引、保留节点 ID、修复内部引用；与另两命名插件择一启用 |
-| [更好的代理名称显示](plugins/plugin-modify-proxy-name.js) | 订阅更新 | 地区旗帜、正则关键词移除、全部/重名索引；与另两命名插件择一启用 |
-| [美化节点名称](plugins/plugin-beautiful-node-name.js) | 订阅更新 / 手动 | 订阅前缀、地区/城市、旗帜及保留关键词；手动处理已有缓存 |
-| [重复节点移除](plugins/plugin-duplicate-proxies-removal.js) | 订阅更新 | 比较完整连接配置，保留凭据/TLS/协议不同的节点并修复引用 |
+| [订阅节点整理](plugins/plugin-subscription-organizer.js) | 订阅更新 / 手动订阅 | 统一可选命名、去重、名称/协议筛选；保留节点身份与内部引用，默认关闭 |
+| [DNS 分流策略](plugins/plugin-dns-policy.js) | 生成配置 | 匹配域名、客户端来源、查询类型或已有规则集，选择已有解析器；不改系统 DNS |
+| [客户端分流策略](plugins/plugin-client-policy.js) | 生成配置 | 明确来源 CIDR 的出站选择/拒绝；保留 DNS 劫持优先，拒绝与旧来源规则重叠 |
 | [路由器 Hosts DNS](plugins/plugin-hosts-management.js) | 生成配置 | 增加 sing-box DNS hosts 映射，不覆盖 `/etc/hosts` |
 | [AdGuardHome DNS 对接](plugins/plugin-adguardhome.js) | 生成配置 | 对接已运行的 DNS 服务，不安装、升级或启动 AdGuardHome |
-| [路由器出口与连通诊断](plugins/plugin-network-info.js) | 手动诊断 | 出口 trace、最多六个站点 HTTP 连通性，不改当前节点 |
-| [IP 地区与运营商查询](plugins/plugin-geoip-search.js) | 手动诊断 | 第三方地区/ASN 查询，不是离线 MMDB 或欺诈风险评分 |
+| [网络诊断](plugins/plugin-network-diagnostics.js) | 手动诊断 | 按需组合出口 trace、显式 IP 地区/运营商查询、最多六站点 HEAD 检查；不切节点 |
 | [流媒体可达性诊断](plugins/plugin-media-unlock-checker.js) | 手动诊断 | Netflix、YouTube Premium、Spotify 的有限只读观察，不把 HTTP 200 当作完整解锁 |
 | [路由器限量下载测速](plugins/plugin-speedtest.js) | 手动诊断 | 当前出口 64 KiB–8 MiB 流式样本，不落盘、不切换节点、不做批量排名 |
 | [出站链管理](plugins/plugin-outbound-chain-manager.js) | 生成配置 | 合并节点/分组 detour 链路，校验依赖环和既有设置冲突 |
 | [配置覆盖](plugins/plugin-config-override.js) | 生成配置 | 受限 JSON 深合并/数组追加，保护管理接口和现有监听，不加载远端脚本 |
 | [按需引用规则集](plugins/plugin-add-rulesets.js) | 生成配置 | 仅引用所选 sing-box 规则集，可附加路由；不整库安装或转换 Clash YAML/MRS |
-| [路由器透明代理](plugins/plugin-router-transparent-proxy.js) | 生成配置 | 显式 LAN 接口、TUN、排除网段与可选 DNS 劫持，不直接改防火墙或 dnsmasq |
+| [路由器透明代理](plugins/plugin-router-transparent-proxy.js) | 生成配置 | 显式 LAN 接口、TUN、排除网段与可选 DNS 劫持；旧 ClientRules 保留读取并明确迁移 |
 | [路由器独立代理端口](plugins/plugin-router-listeners.js) | 生成配置 | HTTP/SOCKS/mixed 入站绑定出站或沿用全局路由；LAN 监听需明确认证配置 |
 | [核心自动测速选择](plugins/plugin-router-urltest.js) | 生成配置 | 核心 URLTest 探测选择；不等价 EWMA 智能评分、日志错误阈值或按序故障转移 |
 
@@ -31,11 +29,11 @@
 
 ## 安装、升级与应用
 
-1. 升级主程序至 **1.3.1+**，打开「插件 → 插件中心」。有有效目录缓存时先显示缓存，没有缓存时只获取本仓库的 `index.json` 元数据列表；「检查更新」也只刷新列表，不下载 JS、不安装插件。选择所需插件并点击「安装」，才下载该插件源码，通过 SHA256 和语法校验后保存。列表获取失败且无缓存时显示空目录和警告，不会出现主程序内置目录。
-2. **旧用户先禁用多余命名插件，只保留防重名、更好名称、美化三者中的一个，再更新。** 三者可同时安装为备用，但不能同时启用；去重可与所选命名插件组合。更新不会静默关闭旧插件。
+1. 升级主程序至 **1.4.0+**，打开「插件 → 插件中心」。有有效目录缓存时先显示缓存，没有缓存时只获取本仓库的 `index.json` 元数据列表；「检查更新」也只刷新列表，不下载 JS、不安装插件。选择所需插件并点击「安装」，才下载该插件源码，通过 SHA256 和语法校验后保存。列表获取失败且无缓存时显示空目录和警告，不会出现主程序内置目录。
+2. 默认列表只显示 14 个当前插件，兼容区保留旧 6 个 ID，旧安装仍可单独显式更新。**迁移前导出旧参数、在插件页禁用旧项，再安装新项并明确配置。** 不会自动迁移、禁用或删除旧安装；新旧互斥避免重复处理。参数对应、回退与 TUN `ClientRules` 迁移见 [1.4 迁移说明](docs/migration-1.4.md)。
 3. 安装、编辑、更新本身不执行脚本。「设置 → 插件」提供开关、单选、输入和多行 JSON 参数并自动保存；更多菜单提供高级 JSON、触发器、启停、顺序和删除，源码可查看、修改、导入导出。
-4. **八个配置插件默认不生效**：Hosts、AdGuardHome、覆盖、TUN、URLTest 的 `Enabled` 关闭；链路、规则集和独立端口的列表默认为 `[]`。填写实际接口/tag/地址后，再开启开关或添加规则。
-5. 更新订阅时执行启用的订阅插件；美化的手动运行需选择已有缓存的订阅。四个手动诊断直接返回报告，不选择订阅、不写缓存、不改当前 selector。
+4. **十个配置插件默认不生效**：Hosts、AdGuardHome、覆盖、TUN、URLTest、DNS/客户端策略的 `Enabled` 关闭；链路、规则集和独立端口的列表默认为 `[]`。订阅整理也默认关闭。填写实际接口/tag/地址后，再开启对应功能。
+5. 更新订阅时执行已启用的订阅整理；手动整理需选择已有缓存的订阅。三个当前诊断插件直接返回报告，不选择订阅、不写缓存、不改当前 selector。DNS/客户端策略的字段、优先级与边界见 [策略说明](docs/policies.md)。
 6. 配置插件只改变生成结果。先预览并检查配置，**保存后按需手动重启核心**。浏览器关闭不会停止核心自己的 URLTest。
 
 点击某插件「更新」才下载该项新源码，经 SHA256 和语法校验后替换已安装版本；下载或校验失败保留原版本。更新保留参数、启停、触发器和顺序，会覆盖本地源码修改，独立定制建议使用新 ID。目录刷新只校验并缓存元数据，失败保留有效缓存并提示，没有缓存则保持空目录。
@@ -87,7 +85,11 @@ docs/upstream-review.md     中文逐项适配说明
 
 ```sh
 node scripts/build-naming.mjs
+node scripts/build-organizer.mjs
+node scripts/build-policies.mjs
 node scripts/build-naming.mjs --check
+node scripts/build-organizer.mjs --check
+node scripts/build-policies.mjs --check
 node --test tests/*.test.mjs
 ```
 
@@ -99,7 +101,7 @@ go run ./cmd/plugin-check ../WEBUI.for.SingBox-Plugins
 go run ../WEBUI.for.SingBox-Plugins/tests/goja/main.go ../WEBUI.for.SingBox-Plugins
 ```
 
-校验器检查路径、容量、摘要与语法；行为/真实 Goja 测试验证转换、引用、冲突和幂等。设置 `SING_BOX_114_PATH` 可让夹具调用真实核心检查代表配置。Linux 专属 TUN 配置需要在 Linux 核心环境执行；本轮将由 CI 验证，不能把 Windows 上跳过该项视为 Linux 已通过。这些检查不能替代实际设备网络验证。
+校验器检查路径、容量、摘要、兼容替代关系与语法；行为/真实 Goja 测试验证转换、引用、冲突和适用转换的幂等性。设置 `SING_BOX_114_PATH` 可让夹具调用真实核心检查代表配置；运行夹具需带上 `index.json`、`plugins/` 和 `tests/fixtures.json`。Linux 专属 TUN 配置需要在 Linux 核心环境执行，本轮交由隔离 CI/模拟环境验证，不能把 Windows 上跳过该项视为 Linux 已通过。按用户要求不连接真实 GL 路由器；这些检查不能替代实体设备网络验证。
 
 保持 LF 换行，将源码和新清单只提交到本插件仓库；源码变更应递增插件版本。主仓库不复制清单或脚本，主程序发布不打包插件。用户通过插件中心下载和更新，新增宿主能力仍需升级主程序。SHA256 只校验清单与脚本一致性，来源信任仍依赖仓库权限与 HTTPS。
 

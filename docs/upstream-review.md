@@ -1,8 +1,8 @@
 # 官方插件路由器适配审计
 
-本轮逐项审阅了 **100 个官方插件入口**，发布 **16 个后端插件**。覆盖全部源文件是审计范围，不表示完整复刻这 100 个插件。多个桌面插件的同类需求合并为一个路由器实现；部分仅提供明确限定的替代能力。
+本轮重新核对 **100 个官方插件入口**，当前提供 **14 个按用途归并的后端插件**，另保留 **6 个旧 ID 兼容条目**。覆盖全部源文件是审计范围，不表示完整复刻这 100 个插件。多个桌面插件的同类需求合并为一个路由器实现；部分仅提供明确限定的替代能力。
 
-这 16 个插件仅由 [WEBUI.for.SingBox-Plugins](https://github.com/Ghostdehole/WEBUI.for.SingBox-Plugins) 发行。主程序只提供下载、管理、校验和执行接口，不维护插件发行目录、不嵌入源码；本审计中的目标 ID 均指独立仓库脚本。1.3.0 当时曾随附目录，该历史方案及随附缓存合并已于 1.3.1 取消。
+当前插件及兼容条目仅由 [WEBUI.for.SingBox-Plugins](https://github.com/Ghostdehole/WEBUI.for.SingBox-Plugins) 发行。主程序只提供下载、管理、校验和执行接口，不维护插件发行目录、不嵌入源码；本审计中的目标 ID 均指独立仓库脚本。历史上 1.3.0 曾随附 16 个插件，该发行方案及随附缓存合并已于 1.3.1 取消；1.4 的归并不自动替换旧安装。
 
 插件中心沿用原版 GUI 的分阶段交互：[空列表先获取目录、点击添加才安装](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/views/PluginsView/components/PluginHub.vue#L58-L92)，[目录刷新只处理 JSON](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/stores/plugins.ts#L662-L687)，[所选源码由更新函数获取](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/stores/plugins.ts#L548-L607)。WebUI 在显式安装或更新时仅下载选中脚本，SHA256 和语法检查通过后才保存，不复制桌面宿主或安装事件。
 
@@ -10,17 +10,22 @@
 
 范围为 Generic 81、GFS 13、GFC 5、Extra 1。按完整路径核对固定提交的 Git tree 和原始 blob 摘要；跨目录同名 ID 分别记录。`plugins/Resources/plugin-ui-dev-helper/hotreload.js` 是支持资源，不是第 101 个插件入口，另行记录其摘要。
 
+本轮 `fetch` 和快进同步后，官方 Hub 的 HEAD 仍为 `205ecacb`，没有新增入口或源码变动。逐项重新核对工作树/Git blob 的 SHA256、宿主 API、原依赖证据、当前目标与剩余缺口，详细复核字段保存在 JSON 的 `recheck`。已存在的深度源码审阅不会因为数量目标被改写成“全部可运行”。
+
+四个节点处理入口合并为「订阅节点整理」；出口与 IP 查询合并为「网络诊断」。新增 DNS 和客户端策略依据 sing-box [DNS 规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule_dns.go)、[路由规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule.go)独立实现，补的是现有解析器/出站的策略组合，未复制其他路由项目的 UCI 或系统防火墙代码。字段、优先级和边界见 [策略说明](policies.md)，明确迁移见 [1.4 迁移](migration-1.4.md)。
+
 ## 使用与适用边界
 
-- 使用 **WEBUI.for.SingBox 1.3.1 或更新版本**从独立仓库取得插件；参数与诊断接口在 1.3.0 引入，配置生成以 sing-box 1.14.x 为基线。
+- 使用 **WEBUI.for.SingBox 1.4.0 或更新版本**；新目录使用 `deprecated/replaced_by` 展示兼容旧 ID 与当前替代项，配置生成以 sing-box 1.14.x 为基线。
 - 打开插件中心时先显示有效目录缓存，没有缓存才获取 `index.json`；「检查更新」也只刷新元数据，不下载 JS、不安装插件。目录请求失败时保留缓存，无缓存则显示空目录和警告。只有用户选择安装或更新，才下载该项源码并校验后保存。
 - 元数据目录缓存只能离线浏览，离线不能从中心新安装或更新；已安装源码独立保存，可离线执行。1.3.1 忽略旧版含源码的目录缓存并重新获取列表，不自动安装旧缓存脚本；目录刷新和主程序升级不会替换已安装源码。
-- 八个配置插件默认不改变配置：DNS、配置覆盖、TUN、URLTest 的 `Enabled` 关闭，链路/规则集/独立监听为空列表。填写实际 tag、接口和网络后预览配置，再按需手动重启核心。
-- 三个命名插件互斥启用。旧用户更新前先禁用多余项；完整命名表含 142 地区、907 关键词，保留节点 ID 与引用，不查询 IP。
+- 十个配置插件默认不改变配置：Hosts、AdGuard、覆盖、TUN、URLTest、DNS/客户端策略的 `Enabled` 关闭，链路/规则集/独立监听为空列表。填写实际 tag、接口和网络后预览配置，再按需手动重启核心。
+- 订阅整理默认关闭，新旧节点处理项互斥；旧用户自行导出参数、禁用旧项并迁移。完整命名表含 142 地区、907 关键词，保留节点 ID 与引用，不查询 IP。筛选只用插件显式参数，不二次执行订阅 metadata 过滤。
+- DNS 策略只引用已有解析器，客户端策略只引用已有入口/出站；不重复创建 TUN、hosts 数据、AdGuard 服务或规则集。旧 TUN `ClientRules` 不自动删除，重叠来源规则需要先明确迁移。
 - 诊断仅测路由器后端所选出口，不改当前 selector，不保证每台 LAN 客户端经过同一路由。短下载样本不是线路极限测速，网页可达不是媒体解锁证明。
 - URLTest 由核心探测选择，不等价 EWMA 智能评分、连接日志错误阈值、低速切换或按序故障转移。
 - 透明代理插件生成显式 TUN 配置，不执行 shell 或改写系统防火墙/dnsmasq。核心启动后是否能应用配置取决于固件、权限和网络；发往路由器 LAN IP:53 的 DNS 不会因 TUN 内劫持自动接管。
-- 不自动安装/启动 Sub-Store、Xray、AdGuardHome 等 daemon，不提供桌面托盘、系统代理或 UWP 权限修改。GL-MT3600BE 与其他设备均需按实际架构、内核、fw3/fw4 和服务配置验证。
+- 不自动安装/启动 Sub-Store、Xray、AdGuardHome 等 daemon，不提供桌面托盘、系统代理或 UWP 权限修改。本轮只使用模拟数据和隔离进程/模拟环境，不连接真实 GL-MT3600BE；实体固件仍需按架构、内核、fw3/fw4 与服务配置验证。
 
 ## 尚需专门工程的路由需求
 
@@ -28,19 +33,19 @@
 
 ## 逐文件最终决定
 
-“已适配”表示表中限定功能已实现，不包含原桌面 UI；“部分能力替代”明确不是原算法或协议的等价实现；“待设计/服务”尚未实现；主程序替代项没有对应独立插件 ID。完整的原始静态审阅保留在 JSON 的 `review`，最终状态以 `disposition`、`target_ids`、`conclusion` 为准。
+“已适配”限于所列功能；“已合并”指独立宿主内的当前职责归并，不包括原桌面 UI。“待设计/服务”仍未实现。原始依赖与证据保留在 JSON 的 `review`，本轮复核及剩余范围见 `recheck`；当前映射以 `target_ids` 为准。
 
 ### Generic（81 项）
 
-| 官方源文件 | 决定 | 本轮目标 | 能力边界 / 未移植理由 |
+| 官方源文件 | 决定 | 当前目标 | 能力边界 / 未移植理由 |
 | --- | --- | --- | --- |
 | [plugin-adguardhome.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-adguardhome.js) | 已适配部分能力 | [plugin-adguardhome](../plugins/plugin-adguardhome.js) | 仅将已运行的 AdGuardHome 对接到 sing-box DNS；不下载、安装、升级、备份或启动 daemon。 |
 | [plugin-aliyunpan-signin.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-aliyunpan-signin.js) | 待受管后台服务 | — | 签到属于独立账号任务；需要受保护凭据、受限 POST 与调度事务，本轮不发布。 |
-| [plugin-are-you-chinese.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-are-you-chinese.js) | 部分能力替代 | [plugin-network-info](../plugins/plugin-network-info.js) | 以路由器出口 trace/连通报告替代网络自查需求；未复制 Claude 专项判断及浏览器语言、字体、时区指纹。 |
+| [plugin-are-you-chinese.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-are-you-chinese.js) | 部分能力替代 | [plugin-network-diagnostics](../plugins/plugin-network-diagnostics.js) | 以路由器出口 trace/连通报告替代网络自查需求；未复制 Claude 专项判断及浏览器语言、字体、时区指纹。 |
 | [plugin-auto-failover.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-auto-failover.js) | 部分能力替代 | [plugin-router-urltest](../plugins/plugin-router-urltest.js) | 提供核心 URLTest 持续探测选择；未实现日志失败计数、阈值窗口、冷却、按序故障转移和历史通知。 |
 | [plugin-bandwagon-vps.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-bandwagon-vps.js) | 本轮路由范围外 | — | VPS 开关机、重装和快照应留专门管理控制面；本轮不向插件开放此类远端账号写操作。 |
 | [plugin-batch-download-speed.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-batch-download-speed.js) | 部分能力替代 | [plugin-speedtest](../plugins/plugin-speedtest.js) | 仅提供当前出口 64 KiB–8 MiB 有界 HTTP 样本，不切换生产节点、不批量排名、不保留桌面历史任务。 |
-| [plugin-beautiful-node-name.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-beautiful-node-name.js) | 已适配 | [plugin-beautiful-node-name](../plugins/plugin-beautiful-node-name.js) | 移植完整地区/城市识别并保留旧参数、节点身份、内部引用和幂等；手动操作已有缓存，不重跑官方 UI/store 更新或二次过滤。 |
+| [plugin-beautiful-node-name.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-beautiful-node-name.js) | 已合并 | [plugin-subscription-organizer](../plugins/plugin-subscription-organizer.js) | 归并到订阅节点整理的 beautify 模式；保留 142 地区/907 关键词、城市/前缀/旧参数及身份修复。独立筛选显式启用，不重跑 metadata 过滤或官方 Store。 |
 | [plugin-check-certificate.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-check-certificate.js) | 桌面/开发平台不适用 | — | Sysinternals/Windows 证书库扫描不适用于 OpenWrt；本轮没有整机证书信任审计功能。 |
 | [plugin-clash-api-dashboard.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-clash-api-dashboard.js) | 主程序承担部分用途 | — | 由主程序认证原生仪表盘承担监控/选择器入口；不复刻第三方面板 UI，不打开 Clash API 或向外传 secret。 |
 | [plugin-cliproxyapi.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-cliproxyapi.js) | 待受管后台服务 | — | AI 兼容服务仍有使用场景，但安装、账号和 daemon 生命周期需独立服务管理，本轮不托管。 |
@@ -49,14 +54,14 @@
 | [plugin-custom-theme.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-custom-theme.js) | 主程序承担部分用途 | — | 基础主题、颜色、字体沿用浏览器设置；未移植任意 CSS、背景资源管理或桌面托盘图标。 |
 | [plugin-deepseek-chan.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-deepseek-chan.js) | 本轮路由范围外 | — | Live2D 装饰不是后台路由能力；未加载远端模型和脚本。 |
 | [plugin-download-speed-guard.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-download-speed-guard.js) | 待受管后台服务 | — | 吞吐低速不能直接判断网关故障；需独立后台负载/窗口/冷却和选择器协调，URLTest 不冒充此逻辑。 |
-| [plugin-duplicate-proxies-removal.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-duplicate-proxies-removal.js) | 已适配 | [plugin-duplicate-proxies-removal](../plugins/plugin-duplicate-proxies-removal.js) | 使用完整配置指纹而非仅 server:port 去重，保留不同凭据/协议/TLS并修复引用；去除上游隐式附加索引。 |
+| [plugin-duplicate-proxies-removal.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-duplicate-proxies-removal.js) | 已合并 | [plugin-subscription-organizer](../plugins/plugin-subscription-organizer.js) | 归并到订阅节点整理的可选完整配置去重；保留凭据/TLS/协议/detour不同连接并修复引用，遇不明确同名引用保守保留。旧 ID 保留兼容。 |
 | [plugin-emudhra-ca-check.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-emudhra-ca-check.js) | 待专门能力设计 | — | 固定证书链诊断有价值，但本轮未提供专门测试清单和 TLS 信任报告；通用网络错误不等于证书安全结论。 |
 | [plugin-fast-delay-test.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-fast-delay-test.js) | 待受管后台服务 | — | 独立订阅测速核心、排序与删除仍需有界作业/结果预览/取消清理；已有运行核心测速并不覆盖全部功能。 |
 | [plugin-file-server.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-file-server.js) | 待受管后台服务 | — | LAN 文件服务需求保留给独立 NAS/受管服务；不在插件中开启额外无认证文件服务器。 |
 | [plugin-file-transfer-assistant.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-file-transfer-assistant.js) | 待受管后台服务 | — | 文件互传需认证、目录边界、磁盘配额与持久服务，不复刻桌面文件选择器或无认证上传端口。 |
 | [plugin-frp-client.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-frp-client.js) | 待受管后台服务 | — | 内网穿透是有效路由用途；应对接 frpc/procd 和受限配置动作，本轮不下载或启动 FRP。 |
 | [plugin-generate-warp-config.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-generate-warp-config.js) | 待专门能力设计 | — | WARP 需密钥生成、显式注册 POST、秘密存储和 endpoint 验证；未提供只改节点而无可用服务的替代品。 |
-| [plugin-geoip-search.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-geoip-search.js) | 已适配部分能力 | [plugin-geoip-search](../plugins/plugin-geoip-search.js) | 用受限 HTTPS 查询显式 IP 或出口的地区/ASN/运营商；第三方信息非精确地理位置，也非欺诈风险或解锁结论。 |
+| [plugin-geoip-search.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-geoip-search.js) | 已合并 | [plugin-network-diagnostics](../plugins/plugin-network-diagnostics.js) | 归并到网络诊断的显式 IP/当前出口查询；仅地区/ASN/运营商近似信息，不替代离线 MMDB、风险评分或媒体解锁。旧 ID 保留兼容。 |
 | [plugin-gitea.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-gitea.js) | 待受管后台服务 | — | Git 仓库服务安装/数据库/账号生命周期由专用服务负责，本轮不在路由 WebUI 托管。 |
 | [plugin-github-commit-history.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-github-commit-history.js) | 本轮路由范围外 | — | 任意仓库提交浏览不是本轮路由功能；主程序版本信息不等价完整提交浏览器。 |
 | [plugin-github-workflows.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-github-workflows.js) | 本轮路由范围外 | — | 工作流、artifact、release/tag 写入删除留 GitHub 控制面；不将仓库管理 token 交给通用脚本。 |
@@ -65,19 +70,19 @@
 | [plugin-gui-restful-api-v1.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-gui-restful-api-v1.js) | 主程序承担部分用途 | — | 复用主程序已认证 HTTP/RPC；不另建监听端口，也不宣称兼容官方全部 REST/桌面窗口端点。 |
 | [plugin-hosts-management.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-hosts-management.js) | 已适配部分能力 | [plugin-hosts-management](../plugins/plugin-hosts-management.js) | 转为 sing-box DNS hosts 映射和作用域规则；不覆盖 /etc/hosts，不管理三份系统 hosts 预设。 |
 | [plugin-hotkey-api-bridge.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-hotkey-api-bridge.js) | 桌面/开发平台不适用 | — | Windows 全局热键属于访问者电脑，本轮不从路由器注册或监听客户端系统热键。 |
-| [plugin-index-the-proxy-name.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-index-the-proxy-name.js) | 已适配 | [plugin-index-the-proxy-name](../plugins/plugin-index-the-proxy-name.js) | 保持索引功能，增加稳定重复执行、节点 ID 保留和内部引用重映射；与另两命名插件互斥启用。 |
+| [plugin-index-the-proxy-name.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-index-the-proxy-name.js) | 已合并 | [plugin-subscription-organizer](../plugins/plugin-subscription-organizer.js) | 归并到订阅节点整理的 index 模式；保留稳定索引、节点 ID 和内部引用修复。旧 ID 仅供显式兼容更新，不自动替换。 |
 | [plugin-install-font.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-install-font.js) | 桌面/开发平台不适用 | — | 不能在路由器为访问者 Windows 安装字体/注册表；继续使用浏览器现有字体偏好。 |
-| [plugin-ip-geolocation.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-ip-geolocation.js) | 已合并 | [plugin-network-info](../plugins/plugin-network-info.js) | 合并到路由器出口诊断；显示实际请求出口报告，不提供桌面状态栏/托盘。 |
+| [plugin-ip-geolocation.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-ip-geolocation.js) | 已合并 | [plugin-network-diagnostics](../plugins/plugin-network-diagnostics.js) | 归并到网络诊断的出口观察；不提供桌面状态栏/托盘，不认为每个目的站点或 LAN 客户端有相同出口。 |
 | [plugin-ipc-logs.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-ipc-logs.js) | 主程序承担部分用途 | — | 使用主程序日志与诊断，不注入 Wails IPC hook；未复刻桌面 IPC 参数导出工具。 |
 | [plugin-live2d-widget.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-live2d-widget.js) | 本轮路由范围外 | — | 浏览器看板娘与模型主题不属于路由服务，本轮不移植。 |
 | [plugin-media-unlock-checker.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-media-unlock-checker.js) | 已适配部分能力 | [plugin-media-unlock-checker](../plugins/plugin-media-unlock-checker.js) | 仅 Netflix、YouTube Premium、Spotify 的只读页面/服务观察；截断和网络错误为未知，未实现 Disney 注册/所有平台或播放验证。 |
 | [plugin-meilisearch.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-meilisearch.js) | 待受管后台服务 | — | 搜索引擎是独立高资源服务，本轮不安装、启动或管理其数据库。 |
 | [plugin-metacubexd-dashboard.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-metacubexd-dashboard.js) | 主程序承担部分用途 | — | 使用本地认证原生仪表盘；未移植 MetaCubeXD 或外传 Clash controller/secret。 |
 | [plugin-mitm-core.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-mitm-core.js) | 待受管后台服务 | — | HTTPS 拦截、CA 信任和前置服务需单独受管部署及明确客户端配置，本轮不自动接管 LAN。 |
-| [plugin-mmdb-example.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-mmdb-example.js) | 部分能力替代 | [plugin-geoip-search](../plugins/plugin-geoip-search.js) | 仅提供在线地区查询替代基础查 IP 需求；没有离线 MMDB 数据库、文件句柄或查询 API。 |
-| [plugin-modify-proxy-name.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-modify-proxy-name.js) | 已适配 | [plugin-modify-proxy-name](../plugins/plugin-modify-proxy-name.js) | 扩充完整地区和兼容别名，保留 flag/移除关键词/索引参数及引用修复；边界匹配避免普通单词误命中。 |
+| [plugin-mmdb-example.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-mmdb-example.js) | 部分能力替代 | [plugin-network-diagnostics](../plugins/plugin-network-diagnostics.js) | 仅提供在线地区查询替代基础查 IP 需求；没有离线 MMDB 数据库、文件句柄或查询 API。 |
+| [plugin-modify-proxy-name.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-modify-proxy-name.js) | 已合并 | [plugin-subscription-organizer](../plugins/plugin-subscription-organizer.js) | 归并到订阅节点整理的 flags 模式；完整地区/别名、旧旗帜/关键词/索引参数与引用修复继续保留。旧 ID 保留兼容。 |
 | [plugin-music-player.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-music-player.js) | 本轮路由范围外 | — | 音频播放/频谱属于客户端媒体功能；本轮不授予访问路由器任意音频目录的能力。 |
-| [plugin-network-info.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-network-info.js) | 已适配部分能力 | [plugin-network-info](../plugins/plugin-network-info.js) | 合并出口 trace 和最多六个站点 HEAD 连通诊断；不复制全部第三方 IP 提供商或桌面弹窗实现。 |
+| [plugin-network-info.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-network-info.js) | 已合并 | [plugin-network-diagnostics](../plugins/plugin-network-diagnostics.js) | 归并到网络诊断：出口 trace 与最多六站点 HEAD 按需组合；不复制全部 IP 提供商或桌面弹窗，旧 ID 保留兼容。 |
 | [plugin-network-sharing.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-network-sharing.js) | 部分能力替代 | [plugin-router-transparent-proxy](../plugins/plugin-router-transparent-proxy.js) | 保留 LAN 透明代理需求，以显式 TUN 配置实现部分用途；没有 Windows ICS、自动网卡共享、系统防火墙/DHCP改写。 |
 | [plugin-node-configurator.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-node-configurator.js) | 待专门能力设计 | — | 协议表单与导出有价值；需要固定版本转换库、当前核心字段验证及持久化事务，本轮未移植。 |
 | [plugin-node-convert.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Generic/plugin-node-convert.js) | 待专门能力设计 | — | 多格式完整转换需在订阅验证前接入固定版本转换器，保留未知/目标字段；本轮不加载远程 ESM，也不声称所有格式已兼容。 |
@@ -118,7 +123,7 @@
 
 ### GFS（13 项）
 
-| 官方源文件 | 决定 | 本轮目标 | 能力边界 / 未移植理由 |
+| 官方源文件 | 决定 | 当前目标 | 能力边界 / 未移植理由 |
 | --- | --- | --- | --- |
 | [plugin-add-rulesets.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/GFS/plugin-add-rulesets.js) | 已适配部分能力 | [plugin-add-rulesets](../plugins/plugin-add-rulesets.js) | 按显式配置引用 sing-box 远程规则集并可增加路由；不整库导入官方规则列表或写规则库文件。 |
 | [plugin-config-override.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/GFS/plugin-config-override.js) | 已适配部分能力 | [plugin-config-override](../plugins/plugin-config-override.js) | 提供受限 JSON 深合并/数组追加；保护管理接口和现有监听，不读取任意文件或下载远程片段。 |
@@ -136,7 +141,7 @@
 
 ### GFC（5 项）
 
-| 官方源文件 | 决定 | 本轮目标 | 能力边界 / 未移植理由 |
+| 官方源文件 | 决定 | 当前目标 | 能力边界 / 未移植理由 |
 | --- | --- | --- | --- |
 | [plugin-add-rulesets.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/GFC/plugin-add-rulesets.js) | 部分能力替代 | [plugin-add-rulesets](../plugins/plugin-add-rulesets.js) | 合并按需规则引用用途；要求 sing-box source/binary，不转换 Clash YAML/classical 规则内容。 |
 | [plugin-proxy-chain-manager.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/GFC/plugin-proxy-chain-manager.js) | 已合并 | [plugin-outbound-chain-manager](../plugins/plugin-outbound-chain-manager.js) | 将单节点链语义映射为 sing-box detour；不支持 Mihomo dialer-proxy/provider 宿主。 |
@@ -146,7 +151,7 @@
 
 ### Extra（1 项）
 
-| 官方源文件 | 决定 | 本轮目标 | 能力边界 / 未移植理由 |
+| 官方源文件 | 决定 | 当前目标 | 能力边界 / 未移植理由 |
 | --- | --- | --- | --- |
 | [plugin-x-archive-viewer.js](https://github.com/GUI-for-Cores/Plugin-Hub/blob/205ecacb0742a185947252cb91e5b11541c32a94/plugins/Extra/plugin-x-archive-viewer.js) | 本轮路由范围外 | — | 图片档案浏览不是路由或代理管理；保留独立网页用途，不为它开放路由器文件/UI宿主权限。 |
 
