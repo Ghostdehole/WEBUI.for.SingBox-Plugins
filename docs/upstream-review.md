@@ -2,13 +2,19 @@
 
 本轮逐项审阅了 **100 个官方插件入口**，发布 **16 个后端插件**。覆盖全部源文件是审计范围，不表示完整复刻这 100 个插件。多个桌面插件的同类需求合并为一个路由器实现；部分仅提供明确限定的替代能力。
 
+这 16 个插件仅由 [WEBUI.for.SingBox-Plugins](https://github.com/Ghostdehole/WEBUI.for.SingBox-Plugins) 发行。主程序只提供下载、管理、校验和执行接口，不维护插件发行目录、不嵌入源码；本审计中的目标 ID 均指独立仓库脚本。1.3.0 当时曾随附目录，该历史方案及随附缓存合并已于 1.3.1 取消。
+
+插件中心沿用原版 GUI 的分阶段交互：[空列表先获取目录、点击添加才安装](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/views/PluginsView/components/PluginHub.vue#L58-L92)，[目录刷新只处理 JSON](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/stores/plugins.ts#L662-L687)，[所选源码由更新函数获取](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/stores/plugins.ts#L548-L607)。WebUI 在显式安装或更新时仅下载选中脚本，SHA256 和语法检查通过后才保存，不复制桌面宿主或安装事件。
+
 来源固定为 [Plugin-Hub `205ecacb`](https://github.com/GUI-for-Cores/Plugin-Hub/tree/205ecacb0742a185947252cb91e5b11541c32a94) 与 [GUI.for.SingBox `f0de129`](https://github.com/GUI-for-Cores/GUI.for.SingBox/tree/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d)。上游 `package.json` 声明作者 GUI.for.Cores、许可证 GPL-3.0，完整归属见 [NOTICE](../NOTICE.md)。逐文件 SHA256、依赖、冲突、审阅意见及最终结论见 [机器可读审计](../upstream/audit.json)。
 
 范围为 Generic 81、GFS 13、GFC 5、Extra 1。按完整路径核对固定提交的 Git tree 和原始 blob 摘要；跨目录同名 ID 分别记录。`plugins/Resources/plugin-ui-dev-helper/hotreload.js` 是支持资源，不是第 101 个插件入口，另行记录其摘要。
 
 ## 使用与适用边界
 
-- 本轮目录要求 **WEBUI.for.SingBox 1.3.0 或更新版本**；配置生成以 sing-box 1.14.x 为基线。先升级主程序，再更新插件。
+- 使用 **WEBUI.for.SingBox 1.3.1 或更新版本**从独立仓库取得插件；参数与诊断接口在 1.3.0 引入，配置生成以 sing-box 1.14.x 为基线。
+- 打开插件中心时先显示有效目录缓存，没有缓存才获取 `index.json`；「检查更新」也只刷新元数据，不下载 JS、不安装插件。目录请求失败时保留缓存，无缓存则显示空目录和警告。只有用户选择安装或更新，才下载该项源码并校验后保存。
+- 元数据目录缓存只能离线浏览，离线不能从中心新安装或更新；已安装源码独立保存，可离线执行。1.3.1 忽略旧版含源码的目录缓存并重新获取列表，不自动安装旧缓存脚本；目录刷新和主程序升级不会替换已安装源码。
 - 八个配置插件默认不改变配置：DNS、配置覆盖、TUN、URLTest 的 `Enabled` 关闭，链路/规则集/独立监听为空列表。填写实际 tag、接口和网络后预览配置，再按需手动重启核心。
 - 三个命名插件互斥启用。旧用户更新前先禁用多余项；完整命名表含 142 地区、907 关键词，保留节点 ID 与引用，不查询 IP。
 - 诊断仅测路由器后端所选出口，不改当前 selector，不保证每台 LAN 客户端经过同一路由。短下载样本不是线路极限测速，网页可达不是媒体解锁证明。

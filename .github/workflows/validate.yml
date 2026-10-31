@@ -34,6 +34,11 @@ jobs:
       - name: Validate JavaScript and SHA256 index with WebUI's parser
         working-directory: .validator
         run: go run ./cmd/plugin-check ..
+      - name: Verify plugin catalog and subscription identity integration
+        working-directory: .validator
+        env:
+          WEBUI_PLUGIN_REPO: ${{ github.workspace }}
+        run: go run ./tests ./bridge/runtime ./bridge/plugincatalog -short -count=1 -timeout=90s
       - name: Download pinned Linux cores and verify SHA256
         shell: bash
         run: |
