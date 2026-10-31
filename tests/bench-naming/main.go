@@ -26,6 +26,7 @@ func main() {
 	}
 	current := read("sources/naming/regions.js")
 	previous := read("tests/fixtures/naming-regions-before-index.js")
+	runtimeIndex := read("tests/fixtures/naming-regions-runtime-index.js")
 	var regions []struct {
 		StandardName struct {
 			Zh string `json:"zh"`
@@ -43,23 +44,51 @@ func main() {
 			panic("missing generated region fragment: " + id)
 		}
 		reference := map[string]string{}
-		for _, variant := range []string{"reference", "indexed"} {
+		for _, variant := range []string{"reference", "runtime-index", "precomputed"} {
 			code := source
-			if variant == "reference" {
-				code = strings.Replace(code, current, previous, 1)
+			if variant != "precomputed" {
+				baseline := previous
+				if variant == "runtime-index" {
+					baseline = runtimeIndex
+				}
+				code = strings.Replace(code, current, baseline, 1)
+				start := strings.Index(code, "// BEGIN GENERATED REGION INDEX\n")
+				endMarker := "// END GENERATED REGION INDEX\n"
+				end := strings.Index(code, endMarker)
+				if start < 0 || end < start {
+					panic("missing generated index markers")
+				}
+				code = code[:start] + code[end+len(endMarker):]
 			}
 			program, err := goja.Compile(id, code, false)
 			must(err)
+			if variant == "precomputed" {
+				// Verify Node's build-time Unicode casing, stable ranks and bucket
+				// ordering against all 907 entries derived by the actual Goja host.
+				vm := goja.New()
+				_, err = vm.RunProgram(program)
+				must(err)
+				_, err = vm.RunString(`function inspectIndex(index) {
+return JSON.stringify(['regions','cities'].map(function(key) {
+ return Array.from(index[key],function(entry) { return [entry[0],entry[1].map(function(rule) {
+ return [rule.keyword,rule.folded,rule.region.emoji,rule.chinese,rule.rank]; })]; });
+})); } var builtIndexJSON=inspectIndex(RegionIndex);`)
+				must(err)
+				_, err = vm.RunString(runtimeIndex + `
+if (builtIndexJSON !== inspectIndex(regionRules())) throw new Error('build-time index differs from Goja derivation');`)
+				must(err)
+			}
 			for _, scenario := range []string{"single", "low-match-142", "high-match-142"} {
 				input, err := json.Marshal(inputs[scenario])
 				must(err)
-				invoke, err := goja.Compile("invoke", `var configuration={Enabled:true,RenameMode:'beautify'}; onSubscribe(JSON.parse(inputJSON),{});`, false)
+				invoke, err := goja.Compile("invoke", `var configuration=JSON.parse(configurationJSON); onSubscribe(JSON.parse(inputJSON),{});`, false)
 				must(err)
 				times := make([]time.Duration, 5)
 				for i := range times {
 					start := time.Now()
 					vm := goja.New()
 					must(vm.Set("inputJSON", string(input)))
+					must(vm.Set("configurationJSON", `{"Enabled":true,"RenameMode":"beautify"}`))
 					_, err = vm.RunProgram(program)
 					must(err)
 					result, err := vm.RunProgram(invoke)

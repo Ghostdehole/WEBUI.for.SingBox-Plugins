@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {renderRegionIndex} from './region-index.mjs';
 const sources = new URL('../sources/naming/', import.meta.url);
 const targets = new URL('../plugins/', import.meta.url);
 const ids = ['plugin-index-the-proxy-name', 'plugin-modify-proxy-name', 'plugin-beautiful-node-name'];
@@ -14,9 +15,10 @@ const header = '// SPDX-License-Identifier: GPL-3.0-only\n// WEBUI.for.SingBox r
 let stale = false;
 for (const id of ids) {
   const source = header + '\n' + read('shared.js') + '\n'
-    + (id === ids[0] ? '' : 'const RegionData = ' + JSON.stringify(data) + ';\n\n' + read('regions.js') + '\n')
+    + (id === ids[0] ? '' : 'const RegionData = ' + JSON.stringify(data) + ';\n\n' + renderRegionIndex(data) + '\n' + read('regions.js') + '\n')
     + read(id + '.js');
   const path = new URL(id + '.js', targets);
+  if (Buffer.byteLength(source, 'utf8') > 256 * 1024) throw new Error(id + ': exceeds host source limit');
   if (process.argv.includes('--check')) {
     if (fs.readFileSync(path, 'utf8') !== source) { console.error(id + ': generated source is stale'); stale = true; }
   } else fs.writeFileSync(path, source);

@@ -150,12 +150,12 @@
       "id": "plugin-subscription-organizer",
       "name": "订阅节点整理",
       "path": "plugins/plugin-subscription-organizer.js",
-      "sha256": "c813842ed9c344988b417cc78de85820d6381c64df7d3ec54710270e6c0add62",
+      "sha256": "77d6969b7ea11fe9a70dc391afc8c6f9560464b1addf3cd6e8031086423a4801",
       "triggers": [
         "on::subscribe",
         "on::manual"
       ],
-      "version": "1.0.2"
+      "version": "1.0.3"
     },
     {
       "configuration": {},
@@ -773,11 +773,11 @@
       "name": "更好的代理名称显示",
       "path": "plugins/plugin-modify-proxy-name.js",
       "replaced_by": "plugin-subscription-organizer",
-      "sha256": "5ee555a89186d27abd83d17411873ae3116a3e4237bb17d6fa1f51d8ebc72266",
+      "sha256": "9a353f7951aecef27659b0d1a8c46f902a2595f30a47dc52c0fcc2f74ef5fea9",
       "triggers": [
         "on::subscribe"
       ],
-      "version": "1.2.3"
+      "version": "1.2.4"
     },
     {
       "configuration": {},
@@ -834,12 +834,12 @@
       "name": "美化节点名称",
       "path": "plugins/plugin-beautiful-node-name.js",
       "replaced_by": "plugin-subscription-organizer",
-      "sha256": "7bed2e6692e75b4a7a7e9033ac524adc8646e9b073abee289f0f913d2a591992",
+      "sha256": "a095862579faf28255f5228d0b4a685c8639df4d18c2aba0decc548d5fffce93",
       "triggers": [
         "on::subscribe",
         "on::manual"
       ],
-      "version": "1.2.3"
+      "version": "1.2.4"
     },
     {
       "configuration": {},

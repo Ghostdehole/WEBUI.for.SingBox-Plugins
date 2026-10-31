@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {loadPlugin} from './helpers.mjs';
+import {renderRegionIndex} from '../scripts/region-index.mjs';
 
 const ids = ['plugin-index-the-proxy-name', 'plugin-modify-proxy-name', 'plugin-beautiful-node-name'];
 const regions = JSON.parse(fs.readFileSync(new URL('../sources/naming/region-data.json', import.meta.url)));
@@ -50,7 +51,7 @@ test('indexed matching equals the previous algorithm for all 907 aliases and Uni
   const evaluate = path => {
     const context = vm.createContext({names}, {codeGeneration:{strings:false,wasm:false}});
     const matcher = fs.readFileSync(new URL(path, import.meta.url), 'utf8');
-    return JSON.parse(vm.runInContext(shared + '\nconst RegionData=' + JSON.stringify(regions) + ';\n' + matcher + '\n' + inspect, context, {timeout:10000}));
+    return JSON.parse(vm.runInContext(shared + '\nconst RegionData=' + JSON.stringify(regions) + ';\n' + renderRegionIndex(regions) + '\n' + matcher + '\n' + inspect, context, {timeout:10000}));
   };
   const expected = evaluate('./fixtures/naming-regions-before-index.js');
   const actual = evaluate('../sources/naming/regions.js');

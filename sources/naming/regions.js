@@ -1,31 +1,8 @@
-// RegionData is inlined from region-data.json by scripts/build-naming.mjs.
-let compiledRegions;
+// RegionData and its stable-ranked index are derived at build time. Each
+// published script stays standalone; fresh Goja hooks do no table sorting,
+// keyword case folding, Unicode length calculation or alias regex tests.
 function regionRules() {
-  if (compiledRegions) return compiledRegions;
-  const regions = [], cities = [], emoji = new Map();
-  function add(rules, keyword, region) {
-    rules.push({ keyword: keyword, folded: keyword.toLowerCase(), region: region, regex: null,
-      chinese: /[\u3400-\u9fff]/.test(keyword), length: Array.from(keyword).length });
-  }
-  RegionData.forEach(function (region) {
-    emoji.set(region.emoji, region);
-    region.keywords.forEach(function (keyword) { add(regions, keyword, region); });
-    region.subKeywords.forEach(function (keyword) { add(cities, keyword, region); });
-  });
-  const longest = function (a, b) { return b.length - a.length; };
-  regions.sort(longest); cities.sort(longest);
-  function index(rules) {
-    const initials = new Map();
-    rules.forEach(function (rule, rank) {
-      rule.rank = rank;
-      const initial = rule.folded.charAt(0);
-      if (!initials.has(initial)) initials.set(initial, []);
-      initials.get(initial).push(rule);
-    });
-    return initials;
-  }
-  compiledRegions = { regions: index(regions), cities: index(cities), emoji: emoji };
-  return compiledRegions;
+  return RegionIndex;
 }
 
 function regionRegex(rule) {
