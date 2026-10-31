@@ -46,10 +46,12 @@ jobs:
           # Digests from the immutable official release assets:
           # https://github.com/SagerNet/sing-box/releases/expanded_assets/v1.14.0
           # https://github.com/SagerNet/sing-box/releases/expanded_assets/v1.14.2
-          for version in 1.14.0 1.14.2; do
+          # https://github.com/SagerNet/sing-box/releases/expanded_assets/v1.14.4
+          for version in 1.14.0 1.14.2 1.14.4; do
             case "$version" in
               1.14.0) digest=2375de6999f4f56ab46b4fc5ddf26a6aba1d3e61a0f4e7ddec2f4690457d5f63 ;;
               1.14.2) digest=a684484d7477d1437282ee411f4d131d0340aaad60a7868841ebd5d87dd8a0c6 ;;
+              1.14.4) digest=699a1b510aa4396b2176d32d1181920399ebf1e267835da6f3b598d0f7c24968 ;;
               *) exit 1 ;;
             esac
             tool_dir="$RUNNER_TEMP/plugin-core-check/$version"
@@ -65,12 +67,12 @@ jobs:
               "sing-box-$version-linux-amd64/sing-box"
             "$tool_dir/sing-box" version
           done
-      - name: Execute actual Goja and real sing-box 1.14.0 and 1.14.2 checks
+      - name: Execute actual Goja and real sing-box 1.14.0, 1.14.2 and 1.14.4 checks
         working-directory: .validator
         shell: bash
         run: |
           set -euo pipefail
-          for version in 1.14.0 1.14.2; do
+          for version in 1.14.0 1.14.2 1.14.4; do
             SING_BOX_114_PATH="$RUNNER_TEMP/plugin-core-check/$version/sing-box" \
               go run ../tests/goja/main.go ..
           done
