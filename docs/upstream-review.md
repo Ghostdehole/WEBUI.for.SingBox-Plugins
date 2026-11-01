@@ -2,7 +2,7 @@
 
 本轮重新核对 **100 个官方插件入口**，当前提供 **14 个按用途归并的后端插件**，六个旧独立包已从发行中移除。覆盖全部源文件是审计范围，不表示完整复刻这 100 个插件。多个桌面插件的同类需求合并为一个路由器实现；部分仅提供明确限定的替代能力。
 
-当前插件仅由 [WEBUI.for.SingBox-Plugins](https://github.com/Ghostdehole/WEBUI.for.SingBox-Plugins) 发行。主程序只提供下载、管理、校验和执行接口，不维护插件发行目录、不嵌入源码；本审计中的目标 ID 均指独立仓库脚本。历史上 1.3.0 曾随附 16 个插件，该发行方案及随附缓存合并已于 1.3.1 取消；1.4 的归并不自动替换旧安装。
+当前插件仅由 [WEBUI.for.SingBox-Plugins](https://github.com/Ghostdehole/WEBUI.for.SingBox-Plugins) 发行。主程序只提供下载、管理、校验和执行接口，不维护插件发行目录、不嵌入源码；本审计中的目标 ID 均指独立仓库脚本。早期主程序随附插件及合并缓存的方案已取消；当前归并不自动替换旧安装。
 
 插件中心沿用原版 GUI 的分阶段交互：[空列表先获取目录、点击添加才安装](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/views/PluginsView/components/PluginHub.vue#L58-L92)，[目录刷新只处理 JSON](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/stores/plugins.ts#L662-L687)，[所选源码由更新函数获取](https://github.com/GUI-for-Cores/GUI.for.SingBox/blob/f0de129e3c7ee0278eff12f13bbfa435fcc8e57d/frontend/src/stores/plugins.ts#L548-L607)。WebUI 在显式安装或更新时仅下载选中脚本，SHA256 和语法检查通过后才保存，不复制桌面宿主或安装事件。
 
@@ -12,19 +12,19 @@
 
 本轮 `fetch` 和快进同步后，官方 Hub 的 HEAD 仍为 `205ecacb`，没有新增入口或源码变动。逐项重新核对工作树/Git blob 的 SHA256、宿主 API、原依赖证据、当前目标与剩余缺口，详细复核字段保存在 JSON 的 `recheck`。已存在的深度源码审阅不会因为数量目标被改写成“全部可运行”。
 
-四个节点处理入口合并为「订阅节点整理」；出口与 IP 查询合并为「网络诊断」。新增 DNS 和客户端策略依据 sing-box [DNS 规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule_dns.go)、[路由规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule.go)独立实现，补的是现有解析器/出站的策略组合，未复制其他路由项目的 UCI 或系统防火墙代码。字段、优先级和边界见 [策略说明](policies.md)，明确迁移见 [1.4 迁移](migration-1.4.md)。
+四个节点处理入口合并为「订阅节点整理」；出口与 IP 查询合并为「网络诊断」。新增 DNS 和客户端策略依据 sing-box [DNS 规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule_dns.go)、[路由规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule.go)独立实现，补的是现有解析器/出站的策略组合，未复制其他路由项目的 UCI 或系统防火墙代码。字段、优先级和边界见 [策略说明](policies.md)，明确迁移见 [旧插件迁移](migration-1.4.md)。
 
 ## 使用与适用边界
 
-- 使用 **WEBUI.for.SingBox 1.4.0 或更新版本**；新目录使用 `deprecated/replaced_by` 展示兼容旧 ID 与当前替代项，配置生成以 sing-box 1.14.x 为基线。
+- 建议使用 **WEBUI.for.SingBox 1.28.1 正式版**，最低主程序版本仍为 1.4.0；当前目录仅含 14 个插件，不再展示兼容旧项。替代关系保存在迁移文档中，配置生成以 sing-box 1.14.x 为基线。
 - 打开插件中心时先显示有效目录缓存，没有缓存才获取 `index.json`；「检查更新」也只刷新元数据，不下载 JS、不安装插件。目录请求失败时保留缓存，无缓存则显示空目录和警告。只有用户选择安装或更新，才下载该项源码并校验后保存。
-- 元数据目录缓存只能离线浏览，离线不能从中心新安装或更新；已安装源码独立保存，可离线执行。1.3.1 忽略旧版含源码的目录缓存并重新获取列表，不自动安装旧缓存脚本；目录刷新和主程序升级不会替换已安装源码。
+- 元数据目录缓存只能离线浏览，离线不能从中心新安装或更新；已安装源码独立保存，可离线执行。旧版含源码的目录缓存会被忽略并重新获取列表，不自动安装旧缓存脚本；目录刷新和主程序升级不会替换已安装源码。
 - 十个配置插件默认不改变配置：Hosts、AdGuard、覆盖、TUN、URLTest、DNS/客户端策略的 `Enabled` 关闭，链路/规则集/独立监听为空列表。填写实际 tag、接口和网络后预览配置，再按需手动重启核心。
 - 订阅整理默认关闭，新旧节点处理项互斥；旧用户自行导出参数、禁用旧项并迁移。完整命名表含 142 地区、907 关键词，保留节点 ID 与引用，不查询 IP。筛选只用插件显式参数，不二次执行订阅 metadata 过滤。
 - DNS 策略只引用已有解析器，客户端策略只引用已有入口/出站；不重复创建 TUN、hosts 数据、AdGuard 服务或规则集。旧 TUN `ClientRules` 不自动删除，重叠来源规则需要先明确迁移。
 - 诊断仅测路由器后端所选出口，不改当前 selector，不保证每台 LAN 客户端经过同一路由。短下载样本不是线路极限测速，网页可达不是媒体解锁证明。
 - URLTest 由核心探测选择，不等价 EWMA 智能评分、连接日志错误阈值、低速切换或按序故障转移。
-- 透明代理插件生成显式 TUN 配置，不执行 shell 或改写系统防火墙/dnsmasq。核心启动后是否能应用配置取决于固件、权限和网络；发往路由器 LAN IP:53 的 DNS 不会因 TUN 内劫持自动接管。
+- 透明代理插件生成显式 TUN 配置，不执行 shell 或改写系统防火墙/dnsmasq。核心启动后是否能应用配置取决于固件、权限和网络；开启插件的 DNS 劫持会生成 `auto_redirect: true` 与 `dns_mode: "hijack"`，在 sing-box 1.14.4 的 Linux 重定向路径中可能接管发往路由器 LAN IP:53 的请求，绕过原有 DNS 转发链。保留该链时应在配置编辑器中核对原生 DNS 模式与转发关系。
 - 不自动安装/启动 Sub-Store、Xray、AdGuardHome 等 daemon，不提供桌面托盘、系统代理或 UWP 权限修改。本轮只使用模拟数据和隔离进程/模拟环境，不连接真实 GL-MT3600BE；实体固件仍需按架构、内核、fw3/fw4 与服务配置验证。
 
 ## 尚需专门工程的路由需求

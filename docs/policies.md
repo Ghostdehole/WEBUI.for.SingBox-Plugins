@@ -1,6 +1,6 @@
 # DNS 与客户端策略
 
-两个插件都使用 `onGenerate(config)`，默认 `Enabled: false`、`Rules: "[]"`。只处理生成的 JSON，不联网、不读取系统文件、不执行 shell、不修改系统防火墙。规则匹配和动作直接使用 sing-box 1.14.x 的现有能力：字段核对来自 [DNS 规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule_dns.go)和[路由规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule.go)，并用 1.14.0、1.14.2 实际核心检查代表配置。
+两个插件都使用 `onGenerate(config)`，默认 `Enabled: false`、`Rules: "[]"`。只处理生成的 JSON，不联网、不读取系统文件、不执行 shell、不修改系统防火墙。规则匹配和动作直接使用 sing-box 1.14.x 的现有能力：最初字段核对来自 [v1.14.2 DNS 规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule_dns.go)和[路由规则源码](https://github.com/SagerNet/sing-box/blob/v1.14.2/option/rule.go)，当前 [CI](../.github/workflows/validate.yml) 使用 1.14.0、1.14.2、1.14.4 实际核心检查代表配置。
 
 这是独立的受限生成器，不是复制 Passwall/OpenClash 的 UCI、防火墙或 DNS 服务管理代码，也不是完整配置导入器。需要保存参数、预览生成结果，确认无误后手动重启核心。核心检查通过不表示流量实际经过 sing-box。
 

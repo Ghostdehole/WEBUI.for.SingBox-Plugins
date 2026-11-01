@@ -579,7 +579,7 @@
         {
           "key": "HijackDNS",
           "title": "劫持经 TUN 的 DNS",
-          "description": "需要先配置有效 DNS 服务器；仅添加该 TUN 的端口 53 规则，不绑定系统 53，不修改 dnsmasq。发送到路由器自身接口地址的 DNS 由原服务处理，sing-box 1.14 不会自动劫持它。",
+          "description": "需要先配置有效 DNS 服务器；生成 TUN DNS 劫持与自动重定向。核心可能接管发往路由器 LAN IP:53 的请求，绕过原有 dnsmasq/AdGuardHome 转发链；不修改这些服务的配置。",
           "component": "Switch",
           "value": false
         },

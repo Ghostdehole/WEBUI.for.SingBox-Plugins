@@ -53,6 +53,7 @@
   },
   "release": {
     "minimum_webui_version": "1.4.0",
+    "recommended_webui_version": "1.28.1",
     "configuration_baseline": "sing-box 1.14.x",
     "plugin_count": 14,
     "total_catalog_entries": 14,
@@ -74,7 +75,7 @@
     ],
     "scope": "14个按用途归并的后端插件；六个旧独立包已停止发行，用户已有安装不自动更改。100项逐一核对，不等价全量桌面复刻。",
     "default_off": "10个配置生成器默认Enabled关闭或空列表，订阅整理默认关闭；诊断仅显式手动运行。",
-    "migration": "deprecated/replaced_by只展示替代关系；显式禁用旧项、手动安装和配置新项，不自动迁移或替换。",
+    "migration": "六个旧包已停止发行，不再提供兼容目录条目；替代关系见迁移文档。显式禁用旧项、手动安装和配置新项，不自动迁移或替换。",
     "removed_package_ids": [
       "plugin-index-the-proxy-name",
       "plugin-modify-proxy-name",
