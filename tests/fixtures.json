@@ -507,9 +507,12 @@
   },
   {
     "name": "Actual Goja recognizes all 142 regions and retains node IDs",
-    "plugin": "plugin-beautiful-node-name",
+    "plugin": "plugin-subscription-organizer",
     "trigger": "on::subscribe",
-    "configuration": {},
+    "configuration": {
+      "Enabled": true,
+      "RenameMode": "beautify"
+    },
     "proxies": [
       {
         "type": "shadowsocks",
@@ -1939,9 +1942,11 @@
   },
   {
     "name": "Actual Goja retains traffic notices and original city spelling",
-    "plugin": "plugin-beautiful-node-name",
+    "plugin": "plugin-subscription-organizer",
     "trigger": "on::subscribe",
     "configuration": {
+      "Enabled": true,
+      "RenameMode": "beautify",
       "EnableSubscriptionName": false,
       "EnableNationalEmoji": false,
       "EnableCityName": true,
@@ -1982,9 +1987,12 @@
   },
   {
     "name": "Actual Goja respects Latin alias boundaries and keeps existing flags",
-    "plugin": "plugin-modify-proxy-name",
+    "plugin": "plugin-subscription-organizer",
     "trigger": "on::subscribe",
-    "configuration": {},
+    "configuration": {
+      "Enabled": true,
+      "RenameMode": "flags"
+    },
     "proxies": [
       {
         "type": "shadowsocks",
@@ -2050,9 +2058,12 @@
   },
   {
     "name": "GUI ID regeneration does not change credential-to-name mapping round 0",
-    "plugin": "plugin-beautiful-node-name",
+    "plugin": "plugin-subscription-organizer",
     "trigger": "on::subscribe",
-    "configuration": {},
+    "configuration": {
+      "Enabled": true,
+      "RenameMode": "beautify"
+    },
     "proxies": [
       {
         "type": "shadowsocks",
@@ -2085,9 +2096,12 @@
   },
   {
     "name": "GUI ID regeneration does not change credential-to-name mapping round 1",
-    "plugin": "plugin-beautiful-node-name",
+    "plugin": "plugin-subscription-organizer",
     "trigger": "on::subscribe",
-    "configuration": {},
+    "configuration": {
+      "Enabled": true,
+      "RenameMode": "beautify"
+    },
     "proxies": [
       {
         "type": "shadowsocks",

@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Behavioral, compatibility and conflict tests
+      - name: Behavioral and conflict tests
         run: node --test tests/*.test.mjs
       - name: Validate JavaScript and SHA256 index with WebUI's parser
         working-directory: .validator

@@ -24,7 +24,7 @@ test('unified IP lookup rejects malformed literals before any network and accept
 
 test('network report observes backend trace and uses bounded HEAD probes without changing nodes', () => {
   const calls=[]
-  const result=loadPlugin('plugin-network-info',{Route:'direct',Sites:'[{"name":"Router","url":"http://192.168.8.1/"}]'},{Plugins:{fetch(url,options){
+  const result=loadPlugin('plugin-network-diagnostics',{Route:'direct',Sites:'[{"name":"Router","url":"http://192.168.8.1/"}]'},{Plugins:{fetch(url,options){
     calls.push({url,options}); return {status:200,body:'ip=192.0.2.1\nloc=ZZ\nwarp=off\n__proto__=bad',elapsed_ms:12,route:options.route,truncated:false}
   }}}).run('onRun')
   assert.deepEqual(result.exit,{ip:'192.0.2.1',loc:'ZZ',warp:'off'})
@@ -33,16 +33,17 @@ test('network report observes backend trace and uses bounded HEAD probes without
   assert.equal(calls[1].options.route,'direct')
 })
 test('diagnostics report outages as errors and reject excess probe requests', () => {
-  const plugin=loadPlugin('plugin-network-info',{Sites:'[]'},{Plugins:{fetch(){throw new Error('network unavailable')}}})
+  const plugin=loadPlugin('plugin-network-diagnostics',{Sites:'[]'},{Plugins:{fetch(){throw new Error('network unavailable')}}})
   assert.match(plugin.run('onRun').exit.error,/network unavailable/)
-  assert.throws(()=>loadPlugin('plugin-network-info',{Sites:JSON.stringify(Array(7).fill({name:'x',url:'https://example.com'}))},{Plugins:{fetch(){return {status:500}}}}).run('onRun'),/six/)
+  assert.throws(()=>loadPlugin('plugin-network-diagnostics',{Sites:JSON.stringify(Array(7).fill({name:'x',url:'https://example.com'}))},{Plugins:{fetch(){return {status:500}}}}).run('onRun'),/six/)
 })
 test('GeoIP never treats incomplete/provider-error data as a successful lookup', () => {
   const fetch=()=>({status:200,body:JSON.stringify({success:true,ip:'192.0.2.1',country:'Example',connection:{asn:64500}}),route:'core'})
-  const result=loadPlugin('plugin-geoip-search',{IP:'192.0.2.1'},{Plugins:{fetch}}).run('onRun')
-  assert.equal(result.asn,64500)
-  assert.throws(()=>loadPlugin('plugin-geoip-search',{},{Plugins:{fetch:()=>({status:200,truncated:true,body:'{}'})}}).run('onRun'),/incomplete/)
-  assert.throws(()=>loadPlugin('plugin-geoip-search',{IP:'https://evil.test'},{Plugins:{fetch}}).run('onRun'),/IP address/)
+  const result=loadPlugin('plugin-network-diagnostics',{CheckExit:false,LookupIP:true,Sites:'[]',IP:'192.0.2.1'},{Plugins:{fetch}}).run('onRun')
+  assert.equal(result.ip_lookup.asn,64500)
+  const partial=loadPlugin('plugin-network-diagnostics',{CheckExit:false,LookupIP:true,Sites:'[]'},{Plugins:{fetch:()=>({status:200,truncated:true,body:'{}'})}}).run('onRun');
+  assert.match(partial.ip_lookup.error,/incomplete/)
+  assert.throws(()=>loadPlugin('plugin-network-diagnostics',{LookupIP:true,IP:'https://evil.test'},{Plugins:{fetch}}).run('onRun'),/IP must/)
 })
 test('media HTTP 200 is not falsely reported as successful playback or full unlock', () => {
   const result=loadPlugin('plugin-media-unlock-checker',{Route:'core'},{Plugins:{fetch(){return {status:200,body:'Login required',route:'core',elapsed_ms:4}}}}).run('onRun')

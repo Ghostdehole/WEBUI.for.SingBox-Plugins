@@ -38,7 +38,7 @@ func main() {
 		inputs["high-match-142"] = append(inputs["high-match-142"], map[string]any{"type": "direct", "tag": region.StandardName.Zh + " 01"})
 		inputs["low-match-142"] = append(inputs["low-match-142"], map[string]any{"type": "direct", "tag": fmt.Sprintf("qzxqzx %03d", len(inputs["low-match-142"]))})
 	}
-	for _, id := range []string{"plugin-modify-proxy-name", "plugin-beautiful-node-name", "plugin-subscription-organizer"} {
+	for _, id := range []string{"plugin-subscription-organizer"} {
 		source := read("plugins/" + id + ".js")
 		if strings.Count(source, current) != 1 {
 			panic("missing generated region fragment: " + id)

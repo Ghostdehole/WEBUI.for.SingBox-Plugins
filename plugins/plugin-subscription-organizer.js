@@ -108,14 +108,14 @@ function withFlag(name, match) {
   return match.region.emoji + ' ' + name;
 }
 
-function legacyIndex(proxies) {
+function indexNames(proxies) {
   return renameNodes(proxies, function (name, index) {
     const suffix = '_' + (index + 1);
     return name.endsWith(suffix) ? name : name + suffix;
   });
 }
 
-function legacyFlags(proxies) {
+function flagNames(proxies) {
   const remove = enabled(configuration.EnableRemoveKeywords, false) && configuration.RemoveKeywords
     ? new RegExp(String(configuration.RemoveKeywords), 'g') : null;
   const mode = String(configuration.EnableIndexProxyName == null ? '0' : configuration.EnableIndexProxyName);
@@ -254,8 +254,8 @@ function organize(proxies, subscription) {
   if (configuration.FilterEnabled === true) result = organizerFilter(result);
   if (configuration.RemoveDuplicates === true) result = organizerDedupe(result);
   const mode = configuration.RenameMode || 'none';
-  if (mode === 'index') result = legacyIndex(result);
-  else if (mode === 'flags') result = legacyFlags(result);
+  if (mode === 'index') result = indexNames(result);
+  else if (mode === 'flags') result = flagNames(result);
   else if (mode === 'beautify') result = beautify(result, subscription);
   else if (mode !== 'none') throw new Error('RenameMode must be none, index, flags or beautify');
   return result;

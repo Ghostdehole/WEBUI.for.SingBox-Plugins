@@ -13,12 +13,14 @@ test('organizer defaults are no-op and generated script is reproducible', () => 
   assert.deepEqual(run({},input),input);
   execFileSync(process.execPath,[fileURLToPath(new URL('../scripts/build-organizer.mjs',import.meta.url)),'--check']);
 });
-test('all three legacy naming modes reproduce old options and retain IDs/references',()=>{
+test('all three naming modes retain options, IDs and references',()=>{
   const input=[node('HK'),node('Tokyo',{password:'two',detour:'HK'}),{type:'selector',tag:'group',outbounds:['HK','Tokyo'],default:'Tokyo',__id_in_gui:'g'}];
-  for(const [RenameMode,old] of [['index','index-the-proxy-name'],['flags','modify-proxy-name'],['beautify','beautiful-node-name']]) {
+  for(const RenameMode of ['index','flags','beautify']) {
     const config={Enabled:true,RenameMode,EnableSubscriptionName:false,EnableIndexProxyName:'2'};
     const result=run(config,input,{name:'Sub'});
-    assert.deepEqual(result,loadPlugin('plugin-'+old,config).run('onSubscribe',input,{name:'Sub'}));
+    assert.equal(result.length,input.length);
+    assert.equal(result.find(p=>p.__id_in_gui==='HK').password,'one');
+    assert.notEqual(result.find(p=>p.__id_in_gui==='HK').tag,'HK');
     assert.deepEqual(run(config,result,{name:'Sub'}),result);
     assert.equal(result.find(p=>p.__id_in_gui==='Tokyo').detour,result.find(p=>p.__id_in_gui==='HK').tag);
   }
@@ -52,12 +54,14 @@ test('invalid optional filters are ignored while disabled and rejected only on e
   assert.throws(()=>run({Enabled:true,FilterEnabled:true,IncludeName:'['},input),/regular expression/);
   assert.throws(()=>run({Enabled:true,FilterEnabled:true,IncludeTypes:'["SS"]'},input),/protocol names/);
 });
-test('current and compatibility catalogs have explicit complete replacement conflicts',()=>{
+test('retired packages are absent while replacements still conflict with historical installations',()=>{
   const entries=JSON.parse(fs.readFileSync(new URL('../index.json',import.meta.url))).plugins;
-  assert.equal(entries.filter(p=>!p.deprecated).length,14);assert.equal(entries.filter(p=>p.deprecated).length,6);
+  assert.equal(entries.length,14);assert(entries.every(p=>!p.deprecated&&!p.replaced_by));
   const byId=new Map(entries.map(p=>[p.id,p]));
-  for(const legacy of entries.filter(p=>p.deprecated)) {
-    const replacement=byId.get(legacy.replaced_by);
-    assert(replacement&&!replacement.deprecated);assert(legacy.conflicts.includes(replacement.id));assert(replacement.conflicts.includes(legacy.id));
+  for(const [replacement,oldIDs] of [['plugin-subscription-organizer',['plugin-index-the-proxy-name','plugin-modify-proxy-name','plugin-beautiful-node-name','plugin-duplicate-proxies-removal']],['plugin-network-diagnostics',['plugin-network-info','plugin-geoip-search']]]) {
+    for(const oldID of oldIDs) {
+      assert(!byId.has(oldID));assert(byId.get(replacement).conflicts.includes(oldID));
+      assert(!fs.existsSync(new URL('../plugins/'+oldID+'.js',import.meta.url)));
+    }
   }
 });

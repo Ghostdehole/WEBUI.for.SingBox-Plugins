@@ -2,9 +2,9 @@
 
 为 [Ghostdehole/WEBUI.for.SingBox](https://github.com/Ghostdehole/WEBUI.for.SingBox) 独立维护的 JavaScript 插件仓库，面向路由器、网关和透明代理。**本仓库是插件中心唯一发行来源**，清单与源码只在此维护；主程序提供下载、管理和执行接口，不复制或打包插件发行源码。插件在顶部「插件」页面管理，由 Go 后端执行，订阅定时更新不依赖浏览器保持打开。
 
-**请先升级主程序至 WEBUI.for.SingBox 1.4.0 或更新版本，再从本仓库获取插件。** 1.4.0 支持兼容条目及替代关系元数据；1.3.1 已取消主程序随附插件。配置生成以 sing-box 1.14.x 为基线；插件版本独立，不表示主程序或 Release 版本。
+**请先升级主程序至 WEBUI.for.SingBox 1.4.0 或更新版本，再从本仓库获取插件。** 1.4.0 提供路由器插件管理与执行接口；1.3.1 已取消主程序随附插件。配置生成以 sing-box 1.14.x 为基线；插件版本独立，不表示主程序或 Release 版本。
 
-已审阅并重新核对官方 [Plugin-Hub](https://github.com/GUI-for-Cores/Plugin-Hub) 的全部 **100 个插件入口**。当前目录按用途提供 **14 个插件**，另保留 **6 个旧 ID 兼容条目**；包含合并和部分能力替代，**并非全功能复刻**。逐项取舍见 [中文审计](docs/upstream-review.md)，固定提交和逐文件 SHA256 见 [审计 JSON](upstream/audit.json)。官方桌面 JS 不能直接导入运行。
+已审阅并重新核对官方 [Plugin-Hub](https://github.com/GUI-for-Cores/Plugin-Hub) 的全部 **100 个插件入口**。当前目录按用途提供 **14 个插件**；六个旧独立包已从目录和源码发行中移除；包含合并和部分能力替代，**并非全功能复刻**。逐项取舍见 [中文审计](docs/upstream-review.md)，固定提交和逐文件 SHA256 见 [审计 JSON](upstream/audit.json)。官方桌面 JS 不能直接导入运行。
 
 ## 插件列表
 
@@ -30,7 +30,7 @@
 ## 安装、升级与应用
 
 1. 升级主程序至 **1.4.0+**，打开「插件 → 插件中心」。有有效目录缓存时先显示缓存，没有缓存时只获取本仓库的 `index.json` 元数据列表；「检查更新」也只刷新列表，不下载 JS、不安装插件。选择所需插件并点击「安装」，才下载该插件源码，通过 SHA256 和语法校验后保存。列表获取失败且无缓存时显示空目录和警告，不会出现主程序内置目录。
-2. 默认列表只显示 14 个当前插件，兼容区保留旧 6 个 ID，旧安装仍可单独显式更新。**迁移前导出旧参数、在插件页禁用旧项，再安装新项并明确配置。** 不会自动迁移、禁用或删除旧安装；新旧互斥避免重复处理。参数对应、回退与 TUN `ClientRules` 迁移见 [1.4 迁移说明](docs/migration-1.4.md)。
+2. 目录只提供 14 个当前插件，不再提供六个旧包的安装、更新或兼容入口。主程序会过滤已缓存的旧条目。**迁移前导出旧参数、在插件页禁用旧项，再安装新项并明确配置。** 不会自动迁移、禁用或删除旧安装；新旧互斥避免重复处理。参数对应、回退与 TUN `ClientRules` 迁移见 [1.4 迁移说明](docs/migration-1.4.md)。
 3. 安装、编辑、更新本身不执行脚本。「设置 → 插件」提供开关、单选、输入和多行 JSON 参数并自动保存；更多菜单提供高级 JSON、触发器、启停、顺序和删除，源码可查看、修改、导入导出。
 4. **十个配置插件默认不生效**：Hosts、AdGuardHome、覆盖、TUN、URLTest、DNS/客户端策略的 `Enabled` 关闭；链路、规则集和独立端口的列表默认为 `[]`。订阅整理也默认关闭。填写实际接口/tag/地址后，再开启对应功能。
 5. 更新订阅时执行已启用的订阅整理；手动整理需选择已有缓存的订阅。三个当前诊断插件直接返回报告，不选择订阅、不写缓存、不改当前 selector。DNS/客户端策略的字段、优先级与边界见 [策略说明](docs/policies.md)。
@@ -75,7 +75,7 @@ TUN 内 DNS 劫持只覆盖进入 TUN 的流量，**不会自动接管客户端�
 index.json                  元数据、参数、相对路径、SHA256
 plugins/*.js                独立后端脚本
 sources/naming/             命名源码和固定地区表
-scripts/build-naming.mjs    离线生成命名脚本
+scripts/build-organizer.mjs 离线生成订阅整理脚本
 tests/                     Node 行为测试与真实 Goja 夹具
 upstream/audit.json         100 个官方入口的摘要和最终决定
 docs/upstream-review.md     中文逐项适配说明
@@ -84,10 +84,8 @@ docs/upstream-review.md     中文逐项适配说明
 修改命名源码后，在插件仓库运行：
 
 ```sh
-node scripts/build-naming.mjs
 node scripts/build-organizer.mjs
 node scripts/build-policies.mjs
-node scripts/build-naming.mjs --check
 node scripts/build-organizer.mjs --check
 node scripts/build-policies.mjs --check
 node --test tests/*.test.mjs
@@ -101,7 +99,7 @@ go run ./cmd/plugin-check ../WEBUI.for.SingBox-Plugins
 go run ../WEBUI.for.SingBox-Plugins/tests/goja/main.go ../WEBUI.for.SingBox-Plugins
 ```
 
-校验器检查路径、容量、摘要、兼容替代关系与语法；行为/真实 Goja 测试验证转换、引用、冲突和适用转换的幂等性。设置 `SING_BOX_114_PATH` 可让夹具调用真实核心检查代表配置；运行夹具需带上 `index.json`、`plugins/` 和 `tests/fixtures.json`。Linux 专属 TUN 配置需要在 Linux 核心环境执行，本轮交由隔离 CI/模拟环境验证，不能把 Windows 上跳过该项视为 Linux 已通过。按用户要求不连接真实 GL 路由器；这些检查不能替代实体设备网络验证。
+校验器检查路径、容量、摘要、元数据与语法；行为/真实 Goja 测试验证转换、引用、冲突和适用转换的幂等性。设置 `SING_BOX_114_PATH` 可让夹具调用真实核心检查代表配置；运行夹具需带上 `index.json`、`plugins/` 和 `tests/fixtures.json`。Linux 专属 TUN 配置需要在 Linux 核心环境执行，本轮交由隔离 CI/模拟环境验证，不能把 Windows 上跳过该项视为 Linux 已通过。按用户要求不连接真实 GL 路由器；这些检查不能替代实体设备网络验证。
 
 保持 LF 换行，将源码和新清单只提交到本插件仓库；源码变更应递增插件版本。主仓库不复制清单或脚本，主程序发布不打包插件。用户通过插件中心下载和更新，新增宿主能力仍需升级主程序。SHA256 只校验清单与脚本一致性，来源信任仍依赖仓库权限与 HTTPS。
 

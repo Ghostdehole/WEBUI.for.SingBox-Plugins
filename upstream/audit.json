@@ -55,8 +55,7 @@
     "minimum_webui_version": "1.4.0",
     "configuration_baseline": "sing-box 1.14.x",
     "plugin_count": 14,
-    "total_catalog_entries": 20,
-    "compatibility_entries": 6,
+    "total_catalog_entries": 14,
     "target_ids": [
       "plugin-subscription-organizer",
       "plugin-network-diagnostics",
@@ -73,17 +72,17 @@
       "plugin-router-listeners",
       "plugin-router-urltest"
     ],
-    "compatibility_ids": [
+    "scope": "14个按用途归并的后端插件；六个旧独立包已停止发行，用户已有安装不自动更改。100项逐一核对，不等价全量桌面复刻。",
+    "default_off": "10个配置生成器默认Enabled关闭或空列表，订阅整理默认关闭；诊断仅显式手动运行。",
+    "migration": "deprecated/replaced_by只展示替代关系；显式禁用旧项、手动安装和配置新项，不自动迁移或替换。",
+    "removed_package_ids": [
       "plugin-index-the-proxy-name",
       "plugin-modify-proxy-name",
       "plugin-beautiful-node-name",
       "plugin-duplicate-proxies-removal",
       "plugin-network-info",
       "plugin-geoip-search"
-    ],
-    "scope": "14个按用途归并的当前后端插件，6个旧ID仅兼容更新；100项逐一核对，不等价全量桌面复刻。",
-    "default_off": "10个配置生成器默认Enabled关闭或空列表，订阅整理默认关闭；诊断仅显式手动运行。",
-    "migration": "deprecated/replaced_by只展示替代关系；显式禁用旧项、手动安装和配置新项，不自动迁移或替换。"
+    ]
   },
   "disposition_labels": {
     "adapted": "已适配",
@@ -3216,7 +3215,7 @@
       "target_ids": [
         "plugin-subscription-organizer"
       ],
-      "conclusion": "归并到订阅节点整理的可选完整配置去重；保留凭据/TLS/协议/detour不同连接并修复引用，遇不明确同名引用保守保留。旧 ID 保留兼容。",
+      "conclusion": "归并到订阅节点整理的可选完整配置去重；保留凭据/TLS/协议/detour不同连接并修复引用，遇不明确同名引用保守保留。旧包已移除，用户已有安装不自动更改。",
       "review": {
         "file": "plugins/Generic/plugin-duplicate-proxies-removal.js",
         "id": "plugin-duplicate-proxies-removal",
@@ -3263,7 +3262,7 @@
         "current_target_ids": [
           "plugin-subscription-organizer"
         ],
-        "decision": "归并到订阅节点整理的可选完整配置去重；保留凭据/TLS/协议/detour不同连接并修复引用，遇不明确同名引用保守保留。旧 ID 保留兼容。",
+        "decision": "归并到订阅节点整理的可选完整配置去重；保留凭据/TLS/协议/detour不同连接并修复引用，遇不明确同名引用保守保留。旧包已移除，用户已有安装不自动更改。",
         "remaining_scope": "同端口不同UUID/password/TLS/transport被错误删除；无server的端点会同归undefined；每次运行重复附索引且引用不重映射",
         "source_host_apis": [
           "Plugins.APP_TITLE",
@@ -3946,7 +3945,7 @@
       "target_ids": [
         "plugin-network-diagnostics"
       ],
-      "conclusion": "归并到网络诊断的显式 IP/当前出口查询；仅地区/ASN/运营商近似信息，不替代离线 MMDB、风险评分或媒体解锁。旧 ID 保留兼容。",
+      "conclusion": "归并到网络诊断的显式 IP/当前出口查询；仅地区/ASN/运营商近似信息，不替代离线 MMDB、风险评分或媒体解锁。旧包已移除，用户已有安装不自动更改。",
       "review": {
         "file": "plugins/Generic/plugin-geoip-search.js",
         "id": "plugin-geoip-search",
@@ -4011,7 +4010,7 @@
         "current_target_ids": [
           "plugin-network-diagnostics"
         ],
-        "decision": "归并到网络诊断的显式 IP/当前出口查询；仅地区/ASN/运营商近似信息，不替代离线 MMDB、风险评分或媒体解锁。旧 ID 保留兼容。",
+        "decision": "归并到网络诊断的显式 IP/当前出口查询；仅地区/ASN/运营商近似信息，不替代离线 MMDB、风险评分或媒体解锁。旧包已移除，用户已有安装不自动更改。",
         "remaining_scope": "不能把访问者IP和网关出口混淆；第三方限流/失败，输入需验证为IPv4/IPv6而非拼接任意路径",
         "source_host_apis": [
           "Plugins.HttpGet",
@@ -4870,7 +4869,7 @@
       "target_ids": [
         "plugin-subscription-organizer"
       ],
-      "conclusion": "归并到订阅节点整理的 index 模式；保留稳定索引、节点 ID 和内部引用修复。旧 ID 仅供显式兼容更新，不自动替换。",
+      "conclusion": "归并到订阅节点整理的 index 模式；保留稳定索引、节点 ID 和内部引用修复。旧包已移除，不自动替换用户已有安装。",
       "review": {
         "file": "plugins/Generic/plugin-index-the-proxy-name.js",
         "id": "plugin-index-the-proxy-name",
@@ -4916,7 +4915,7 @@
         "current_target_ids": [
           "plugin-subscription-organizer"
         ],
-        "decision": "归并到订阅节点整理的 index 模式；保留稳定索引、节点 ID 和内部引用修复。旧 ID 仅供显式兼容更新，不自动替换。",
+        "decision": "归并到订阅节点整理的 index 模式；保留稳定索引、节点 ID 和内部引用修复。旧包已移除，不自动替换用户已有安装。",
         "remaining_scope": "重复运行一直附加索引；顺序变化导致名称变化，需引用/稳定ID维护；和另外两命名插件叠加",
         "source_host_apis": [
           "Plugins.APP_TITLE"
@@ -5768,7 +5767,7 @@
       "target_ids": [
         "plugin-subscription-organizer"
       ],
-      "conclusion": "归并到订阅节点整理的 flags 模式；完整地区/别名、旧旗帜/关键词/索引参数与引用修复继续保留。旧 ID 保留兼容。",
+      "conclusion": "归并到订阅节点整理的 flags 模式；完整地区/别名、旧旗帜/关键词/索引参数与引用修复继续保留。旧包已移除，用户已有安装不自动更改。",
       "review": {
         "file": "plugins/Generic/plugin-modify-proxy-name.js",
         "id": "plugin-modify-proxy-name",
@@ -5814,7 +5813,7 @@
         "current_target_ids": [
           "plugin-subscription-organizer"
         ],
-        "decision": "归并到订阅节点整理的 flags 模式；完整地区/别名、旧旗帜/关键词/索引参数与引用修复继续保留。旧 ID 保留兼容。",
+        "decision": "归并到订阅节点整理的 flags 模式；完整地区/别名、旧旗帜/关键词/索引参数与引用修复继续保留。旧包已移除，用户已有安装不自动更改。",
         "remaining_scope": "重复处理可能重复序号；普通对象seenNames遭特殊名称键影响；名称变化需同步引用与稳定ID；和beautify/index目的重叠",
         "source_host_apis": [
           "Plugins.APP_TITLE"
@@ -5910,7 +5909,7 @@
       "target_ids": [
         "plugin-network-diagnostics"
       ],
-      "conclusion": "归并到网络诊断：出口 trace 与最多六站点 HEAD 按需组合；不复制全部 IP 提供商或桌面弹窗，旧 ID 保留兼容。",
+      "conclusion": "归并到网络诊断：出口 trace 与最多六站点 HEAD 按需组合；不复制全部 IP 提供商或桌面弹窗，旧包已移除，用户已有安装不自动更改。",
       "review": {
         "file": "plugins/Generic/plugin-network-info.js",
         "id": "plugin-network-info",
@@ -5941,7 +5940,7 @@
         "current_target_ids": [
           "plugin-network-diagnostics"
         ],
-        "decision": "归并到网络诊断：出口 trace 与最多六站点 HEAD 按需组合；不复制全部 IP 提供商或桌面弹窗，旧 ID 保留兼容。",
+        "decision": "归并到网络诊断：出口 trace 与最多六站点 HEAD 按需组合；不复制全部 IP 提供商或桌面弹窗，旧包已移除，用户已有安装不自动更改。",
         "remaining_scope": "作为认证后台的手动诊断任务，复用请求代理策略、核心实例快照及超时/并发/响应体上限；明确直连或核心出口，不因暂无 HTTP 插件 API 排除",
         "source_host_apis": [
           "Plugins.HttpCancel",

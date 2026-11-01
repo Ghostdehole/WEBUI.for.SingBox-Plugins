@@ -7,20 +7,20 @@ import {fileURLToPath} from 'node:url';
 import {loadPlugin} from './helpers.mjs';
 import {renderRegionIndex} from '../scripts/region-index.mjs';
 
-const ids = ['plugin-index-the-proxy-name', 'plugin-modify-proxy-name', 'plugin-beautiful-node-name'];
+const ids = ['index', 'flags', 'beautify'];
 const regions = JSON.parse(fs.readFileSync(new URL('../sources/naming/region-data.json', import.meta.url)));
 const node = (tag, extras={}) => ({type:'shadowsocks', tag, id:tag, server:'example.test', server_port:443, method:'aes-128-gcm', password:'example', ...extras});
-const run = (id, config, data, sub={}) => loadPlugin(id, config).run('onSubscribe', data, sub);
+const run = (id, config, data, sub={}) => loadPlugin('plugin-subscription-organizer', {Enabled:true,RenameMode:id,...config}).run('onSubscribe', data, sub);
 
-test('generated standalone sources match the maintained offline fragments', () => {
-  execFileSync(process.execPath, [fileURLToPath(new URL('../scripts/build-naming.mjs', import.meta.url)), '--check']);
+test('generated organizer source matches the maintained offline fragments', () => {
+  execFileSync(process.execPath, [fileURLToPath(new URL('../scripts/build-organizer.mjs', import.meta.url)), '--check']);
 });
 
 test('region patterns are compiled only for literal candidates and reused in one invocation', () => {
-  for (const id of [ids[1], ids[2], 'plugin-subscription-organizer']) {
+  for (const id of [ids[1], ids[2]]) {
     let compiled = 0;
     function CountedRegExp(pattern, flags) { compiled++; return new RegExp(pattern, flags); }
-    const plugin = loadPlugin(id, {Enabled:true,RenameMode:'flags'}, {RegExp:CountedRegExp});
+    const plugin = loadPlugin('plugin-subscription-organizer', {Enabled:true,RenameMode:id}, {RegExp:CountedRegExp});
     plugin.run('onSubscribe', [node('qzxqzx')], {});
     assert.equal(compiled, 0, id + ': unmatched names must not compile the region table');
     plugin.run('onSubscribe', [node('France node')], {});
@@ -78,7 +78,7 @@ test('longer aliases, city aliases, Latin boundaries, flags and notices are hand
   assert.equal(run(ids[1],{},[node('🇹🇼 Taiwan')])[0].tag,'🇹🇼 Taiwan');
 });
 
-test('all naming scripts preserve IDs, credentials, fields and remap internal references', () => {
+test('all naming modes preserve IDs, credentials, fields and remap internal references', () => {
   const input = [node('HK01',{id:'node-id',tls:{server_name:'HK01'}}),node('JP01',{id:'other-id',detour:'HK01'}),{id:'group-id',type:'selector',tag:'group',outbounds:['HK01','JP01','external'],default:'JP01'}];
   for (const id of ids) {
     const output = run(id,{},input);
@@ -103,7 +103,7 @@ test('repeated execution is stable including serials, duplicates, metadata and s
   }
 });
 
-test('legacy parameter values, no-index mode, city names and manual cached execution remain compatible', () => {
+test('parameter values, no-index mode, city names and manual cached execution remain compatible', () => {
   const noFlags={EnableAddEmoji:0,EnableIndexProxyName:'0'};
   assert.deepEqual(run(ids[1],noFlags,[node('France'),node('France')]).map(x=>x.tag),['France','France']);
   assert.equal(run(ids[1],{EnableAddEmoji:false,EnableRemoveKeywords:true,RemoveKeywords:'^PREFIX-'},[node('PREFIX-France')])[0].tag,'France');
@@ -111,7 +111,7 @@ test('legacy parameter values, no-index mode, city names and manual cached execu
   const input=[node('HK Kowloon BGP 2x')];
   const output=run(ids[2],config,input,{name:'Subscription'});
   assert.equal(output[0].tag,'Hong Kong 01 Kowloon | BGP 2x');
-  assert.deepEqual(loadPlugin(ids[2],config).run('onRun',input,{name:'Subscription'}),output);
+  assert.deepEqual(loadPlugin('plugin-subscription-organizer',{Enabled:true,RenameMode:ids[2],...config}).run('onRun',input,{name:'Subscription'}),output);
   assert.equal(run(ids[2],{EnableCityName:false},[node('HK Kowloon')])[0].tag,'🇭🇰 香港 01');
   assert.throws(()=>run(ids[1],{EnableRemoveKeywords:true,RemoveKeywords:'['},input));
 });

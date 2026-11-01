@@ -244,7 +244,7 @@ test('chain cannot use a generated URLTest group that resolves back to its sourc
 })
 
 test('each naming strategy composes with dedupe without losing node fields or internal references', () => {
-  const ids = ['plugin-index-the-proxy-name','plugin-modify-proxy-name','plugin-beautiful-node-name']
+  const ids = ['index','flags','beautify']
   const input = [
     {type:'socks',tag:'HK1',server:'192.0.2.1',server_port:1080,__id_in_gui:'keep'},
     {__id_in_gui:'duplicate',server_port:1080,server:'192.0.2.1',tag:'HK2',type:'socks'},
@@ -252,8 +252,8 @@ test('each naming strategy composes with dedupe without losing node fields or in
     {type:'selector',tag:'chosen',outbounds:['HK1','HK2','JP'],default:'HK2',__id_in_gui:'selector'}
   ]
   for (const id of ids) {
-    const name = data => loadPlugin(id,{}).run('onSubscribe',goJSON(data),{name:'Sub'})
-    const dedupe = data => loadPlugin('plugin-duplicate-proxies-removal',{}).run('onSubscribe',goJSON(data))
+    const name = data => loadPlugin('plugin-subscription-organizer',{Enabled:true,RenameMode:id}).run('onSubscribe',goJSON(data),{name:'Sub'})
+    const dedupe = data => loadPlugin('plugin-subscription-organizer',{Enabled:true,RemoveDuplicates:true}).run('onSubscribe',goJSON(data))
     for (const output of [dedupe(name(input)),name(dedupe(input))]) {
       assert.equal(output.length,3)
       const byID=Object.fromEntries(output.map(item=>[item.__id_in_gui,item]))

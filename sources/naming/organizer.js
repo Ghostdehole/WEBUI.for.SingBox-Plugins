@@ -72,8 +72,8 @@ function organize(proxies, subscription) {
   if (configuration.FilterEnabled === true) result = organizerFilter(result);
   if (configuration.RemoveDuplicates === true) result = organizerDedupe(result);
   const mode = configuration.RenameMode || 'none';
-  if (mode === 'index') result = legacyIndex(result);
-  else if (mode === 'flags') result = legacyFlags(result);
+  if (mode === 'index') result = indexNames(result);
+  else if (mode === 'flags') result = flagNames(result);
   else if (mode === 'beautify') result = beautify(result, subscription);
   else if (mode !== 'none') throw new Error('RenameMode must be none, index, flags or beautify');
   return result;
